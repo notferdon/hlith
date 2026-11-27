@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hlith.local/schemas/delta-review.v1.json",
+  "title": "Hlith intended-change review packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "state", "refusal", "run", "delta_set_sha256", "deltas", "patch_input", "freshness", "proposals", "truncated", "caps", "approve", "rerun_inputs", "raw_strings"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "state": {"enum": ["fresh", "stale", "refused"]},
+    "refusal": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/refusal"}]},
+    "run": {"$ref": "#/$defs/run"},
+    "delta_set_sha256": {"$ref": "#/$defs/sha"},
+    "patch_input": {"type": "object", "additionalProperties": false, "required": ["input_patch_sha256", "applied_patch_sha256", "preamble_removed_bytes"], "properties": {"input_patch_sha256": {"type": ["string", "null"]}, "applied_patch_sha256": {"type": ["string", "null"]}, "preamble_removed_bytes": {"type": "integer", "minimum": 0}}, "description": "The patch file as given vs the bytes applied; bytes before the first diff --git are removed at the operator edge and recorded."},
+    "deltas": {"type": "array", "items": {"type": "object"}, "description": "The validated canonical delta set the digest is computed over (contract.effects.canonical_delta_set); empty for a refused packet."},
+    "freshness": {"$ref": "#/$defs/freshness"},
+    "proposals": {"type": "array", "items": {"$ref": "#/$defs/proposal"}},
+    "truncated": {"type": "boolean"},
+    "caps": {"$ref": "#/$defs/caps"},
+    "approve": {"$ref": "#/$defs/approve"},
+    "rerun_inputs": {"$ref": "#/$defs/rerun_inputs"},
+    "raw_strings": {"const": true, "description": "Every string value is raw, untrusted text. Renderer must apply hlith.delta_review.clean_for_terminal before display."}
+  },
+  "allOf": [{"if": {"properties": {"state": {"const": "fresh"}}}, "then": {"properties": {"refusal": {"type": "null"}, "proposals": {"minItems": 1}}}, "else": {"properties": {"refusal": {"$ref": "#/$defs/refusal"}, "proposals": {"maxItems": 0}}}}],
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "text": {"type": "string", "maxLength": 2048},
+    "refusal": {"type": "object", "additionalProperties": false, "required": ["code", "text"], "properties": {"code": {"enum": ["artifact_changed", "manifest_changed", "no_deltas", "old_schema", "unrenderable_kind", "artifact_in_target", "invalid_artifact", "invalid_manifest", "unsafe_output", "base_unbound"]}, "text": {"$ref": "#/$defs/text"}}},
+    "run": {"type": "object", "additionalProperties": false, "required": ["run_id", "artifact_sha256", "patch_sha256", "base", "artifact_path", "manifest_path", "target_label", "target_repo_path"], "properties": {"run_id": {"type": ["string", "null"], "maxLength": 2048}, "artifact_sha256": {"$ref": "#/$defs/sha"}, "patch_sha256": {"oneOf": [{"$ref": "#/$defs/sha"}, {"type": "null"}]}, "base": {"type": ["string", "null"], "maxLength": 2048}, "artifact_path": {"$ref": "#/$defs/text"}, "manifest_path": {"$ref": "#/$defs/text"}, "target_label": {"$ref": "#/$defs/text"}, "target_repo_path": {"$ref": "#/$defs/text"}}},
+    "freshness": {"type": "object", "additionalProperties": false, "required": ["artifact_sha256", "manifest_sha256"], "properties": {"artifact_sha256": {"$ref": "#/$defs/sha"}, "manifest_sha256": {"$ref": "#/$defs/sha"}}},
+    "caps": {"type": "object", "additionalProperties": false, "required": ["covered_rows", "provenance_rows", "string_bytes"], "properties": {"covered_rows": {"const": 200}, "provenance_rows": {"const": 200}, "string_bytes": {"const": 2048}}},
+    "approve": {"type": "object", "additionalProperties": false, "required": ["flag", "value"], "properties": {"flag": {"const": "--approve-deltas"}, "value": {"$ref": "#/$defs/sha"}}},
+    "rerun_inputs": {"type": "object", "additionalProperties": false, "required": ["patch_path", "manifest_path"], "properties": {"patch_path": {"$ref": "#/$defs/text"}, "manifest_path": {"$ref": "#/$defs/text"}}},
+    "call_input": {"type": "object", "additionalProperties": false, "required": ["args", "kwargs"], "properties": {"args": {"type": "array"}, "kwargs": {"type": "object"}}},
+    "predicate": {"oneOf": [
+      {"type": "object", "additionalProperties": false, "required": ["type", "inputs"], "properties": {"type": {"const": "literal_inputs"}, "inputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/call_input"}}}},
+      {"type": "object", "additionalProperties": false, "required": ["type", "param", "expr"], "properties": {"type": {"const": "expr"}, "param": {"$ref": "#/$defs/text"}, "expr": {"$ref": "#/$defs/text"}}},
+      {"type": "object", "additionalProperties": false, "required": ["type", "param", "class"], "properties": {"type": {"const": "typed"}, "param": {"$ref": "#/$defs/text"}, "class": {"enum": ["empty_str", "none", "int_zero", "int_neg", "int_nonneg", "str_nonempty", "empty_container", "mapping_key_absent", "bool"]}, "key": {"$ref": "#/$defs/text"}}}
+    ]},
+    "expected": {"oneOf": [
+      {"type": "object", "additionalProperties": false, "required": ["kind", "value_repr"], "properties": {"kind": {"const": "returns"}, "value_repr": {"$ref": "#/$defs/text"}}},
+      {"type": "object", "additionalProperties": false, "required": ["kind", "expr"], "properties": {"kind": {"const": "returns_expr"}, "expr": {"$ref": "#/$defs/text"}}},
+      {"type": "object", "additionalProperties": false, "required": ["kind", "exc_type"], "properties": {"kind": {"const": "raises"}, "exc_type": {"$ref": "#/$defs/text"}}}
+    ]},
+    "machine_claim": {"type": "object", "additionalProperties": false, "required": ["id", "symbol", "kind", "predicate", "expected"], "properties": {"id": {"$ref": "#/$defs/text"}, "symbol": {"$ref": "#/$defs/text"}, "kind": {"enum": ["behavior", "signature", "exception", "side-effect"]}, "predicate": {"$ref": "#/$defs/predicate"}, "expected": {"$ref": "#/$defs/expected"}}},
+    "text_provenance": {"type": "object", "additionalProperties": false, "required": ["label", "claim", "input_domain", "pre", "post"], "properties": {"label": {"const": "proposer text (not observed)"}, "claim": {"$ref": "#/$defs/text"}, "input_domain": {"$ref": "#/$defs/text"}, "pre": {"$ref": "#/$defs/text"}, "post": {"$ref": "#/$defs/text"}}},
+    "covered_item": {"type": "object", "additionalProperties": false, "required": ["input_repr", "expected_repr"], "properties": {"input_repr": {"$ref": "#/$defs/text"}, "expected_repr": {"$ref": "#/$defs/text"}}},
+    "pair": {"type": "object", "additionalProperties": false, "required": ["input_repr", "pre_repr", "post_repr", "source"], "properties": {"input_repr": {"$ref": "#/$defs/text"}, "pre_repr": {"$ref": "#/$defs/text"}, "post_repr": {"$ref": "#/$defs/text"}, "source": {"$ref": "#/$defs/text"}}},
+    "preview_example": {"type": "object", "additionalProperties": false, "required": ["input_repr", "pre_repr", "post_repr"], "properties": {"input_repr": {"$ref": "#/$defs/text"}, "pre_repr": {"$ref": "#/$defs/text"}, "post_repr": {"$ref": "#/$defs/text"}}},
+    "pin": {"type": "object", "additionalProperties": false, "required": ["pin_id", "input_repr", "old_expected_repr"], "properties": {"pin_id": {"$ref": "#/$defs/text"}, "input_repr": {"$ref": "#/$defs/text"}, "old_expected_repr": {"$ref": "#/$defs/text"}}},
+    "outlier": {"type": "object", "additionalProperties": false, "required": ["reason_code", "text"], "properties": {"reason_code": {"$ref": "#/$defs/text"}, "text": {"$ref": "#/$defs/text"}}},
+    "preview": {"type": "object", "additionalProperties": false, "required": ["explored", "outside_divergences", "examples", "complete", "source"], "properties": {"explored": {"type": "integer", "minimum": 0}, "outside_divergences": {"type": "integer", "minimum": 0}, "examples": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/preview_example"}}, "complete": {"type": "boolean"}, "source": {"$ref": "#/$defs/text"}}},
+    "render_flags": {"type": "object", "additionalProperties": false, "required": ["contains_ansi", "contains_control", "contains_escaped_control", "requires_cleaning"], "properties": {"contains_ansi": {"type": "boolean"}, "contains_control": {"type": "boolean"}, "contains_escaped_control": {"type": "boolean"}, "requires_cleaning": {"type": "boolean"}}},
+    "proposal": {"type": "object", "additionalProperties": false, "required": ["id", "kind", "symbol", "delta_text", "delta_text_label", "text_provenance", "machine_claim", "scope_sentence", "second_ack_required", "covered", "provenance_pairs", "engine_witnesses", "preview_outside", "superseded_pins", "not_included", "render_flags"], "properties": {"id": {"$ref": "#/$defs/text"}, "kind": {"enum": ["literal", "broader_expression"]}, "symbol": {"$ref": "#/$defs/text"}, "delta_text": {"$ref": "#/$defs/text"}, "delta_text_label": {"const": "proposer text (not observed)"}, "text_provenance": {"$ref": "#/$defs/text_provenance"}, "machine_claim": {"$ref": "#/$defs/machine_claim"}, "scope_sentence": {"$ref": "#/$defs/text"}, "second_ack_required": {"type": "boolean"}, "covered": {"type": "object", "additionalProperties": false, "required": ["items", "total_count"], "properties": {"items": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/covered_item"}}, "total_count": {"type": ["integer", "null"], "minimum": 0}}}, "provenance_pairs": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/pair"}}, "engine_witnesses": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/text"}}, "preview_outside": {"$ref": "#/$defs/preview"}, "superseded_pins": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/pin"}}, "not_included": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/outlier"}}, "render_flags": {"$ref": "#/$defs/render_flags"}}}
+  }
+}

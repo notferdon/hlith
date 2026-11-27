@@ -1,0 +1,163 @@
+{
+ "witnessed_false_held": [
+  "closure_changed_local_capture",
+  "import_time_list_mutation",
+  "class_attribute_state",
+  "import_time_registry_mutation",
+  "mutable_default_import_mutation",
+  "custom_generator_slice_receiver"
+ ],
+ "other_behaviour_changes": [
+  "closure_changed_module_global",
+  "decorated_nested_def",
+  "dict_function",
+  "generator_materialized_receiver",
+  "getattr_receiver",
+  "iterator_materialized_receiver",
+  "list_function",
+  "local_lambda",
+  "module_lambda_assignment",
+  "nested_class",
+  "partial_function",
+  "property_receiver"
+ ],
+ "valid_held": [
+  "cost_local_inline",
+  "cost_local_rename",
+  "cost_constant_rename",
+  "cost_tail_extract",
+  "cost_dry_receiver"
+ ],
+ "fixtures": {
+  "closure_changed_local_capture": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    seed = _TEST_FILE.pattern\n    def h():\n        return [w for _, w in zip(seed, path.split())]\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h())[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    seed = \"a\" * 2500\n    def h():\n        return [w for _, w in zip(seed, path.split())]\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h())[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "import_time_list_mutation": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nSEED = []\nSEED.extend(_TEST_FILE.pattern)\ndef h(s):\n    return [w for _, w in zip(SEED, s.split())]\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nSEED = []\nSEED.extend(\"a\" * 2500)\ndef h(s):\n    return [w for _, w in zip(SEED, s.split())]\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "class_attribute_state": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nclass State:\n    seed = _TEST_FILE.pattern\nState.seed = _TEST_FILE.pattern\ndef h(s):\n    return [w for _, w in zip(State.seed, s.split())]\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nclass State:\n    seed = _TEST_FILE.pattern\nState.seed = \"a\" * 2500\ndef h(s):\n    return [w for _, w in zip(State.seed, s.split())]\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "import_time_registry_mutation": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef short(s):\n    return [w for _, w in zip(_TEST_FILE.pattern, s.split())]\ndef long(s):\n    return s.split()\nF = {\"recv\": short}\nF[\"recv\"] = short\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (F[\"recv\"](path))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef short(s):\n    return [w for _, w in zip(_TEST_FILE.pattern, s.split())]\ndef long(s):\n    return s.split()\nF = {\"recv\": short}\nF[\"recv\"] = long\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (F[\"recv\"](path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "mutable_default_import_mutation": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nSEED = []\ndef h(s, seed=SEED):\n    return [w for _, w in zip(seed, s.split())]\nSEED.extend(_TEST_FILE.pattern)\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nSEED = []\ndef h(s, seed=SEED):\n    return [w for _, w in zip(seed, s.split())]\nSEED.extend(\"a\" * 2500)\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "custom_generator_slice_receiver": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nclass R:\n    def __init__(self, path):\n        self.path = path\n    def __iter__(self):\n        s = self.path\n        yield from [w for _, w in zip(_TEST_FILE.pattern, s.split())]\n    def __getitem__(self, key):\n        return list(self)[key]\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (R(path))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nclass R:\n    def __init__(self, path):\n        self.path = path\n    def __iter__(self):\n        s = self.path\n        yield from s.split()\n    def __getitem__(self, key):\n        return list(self)[key]\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (R(path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "closure_changed_module_global": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n_SEED = _TEST_FILE.pattern\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    def h():\n        return [w for _, w in zip(_SEED, path.split())]\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h())[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n_SEED = \"a\" * 2500\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    def h():\n        return [w for _, w in zip(_SEED, path.split())]\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h())[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "decorated_nested_def": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    def identity(f):\n        return f\n    @identity\n    def h(s):\n        return [w for _, w in zip(_TEST_FILE.pattern, s.split())]\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    def identity(f):\n        return f\n    @identity\n    def h(s):\n        return s.split()\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "dict_function": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef h(s):\n    return [w for _, w in zip(_TEST_FILE.pattern, s.split())]\nF = {\"recv\": h}\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (F[\"recv\"](path))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef h(s):\n    return s.split()\nF = {\"recv\": h}\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (F[\"recv\"](path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "generator_materialized_receiver": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef h(s):\n    yield from [w for _, w in zip(_TEST_FILE.pattern, s.split())]\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (list(h(path)))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef h(s):\n    yield from s.split()\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (list(h(path)))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "getattr_receiver": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nclass R:\n    def __init__(self, path):\n        self.path = path\n    def __getattr__(self, name):\n        s = self.path\n        return [w for _, w in zip(_TEST_FILE.pattern, s.split())]\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (R(path).value)[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nclass R:\n    def __init__(self, path):\n        self.path = path\n    def __getattr__(self, name):\n        s = self.path\n        return s.split()\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (R(path).value)[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "iterator_materialized_receiver": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef h(s):\n    return iter([w for _, w in zip(_TEST_FILE.pattern, s.split())])\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (list(h(path)))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef h(s):\n    return iter(s.split())\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (list(h(path)))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "list_function": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef h(s):\n    return [w for _, w in zip(_TEST_FILE.pattern, s.split())]\nF = [h]\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (F[0](path))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef h(s):\n    return s.split()\nF = [h]\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (F[0](path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "local_lambda": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    h = lambda s: [w for _, w in zip(_TEST_FILE.pattern, s.split())]\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    h = lambda s: s.split()\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "module_lambda_assignment": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nh = lambda s: [w for _, w in zip(_TEST_FILE.pattern, s.split())]\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nh = lambda s: s.split()\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "nested_class": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    class R:\n        def get(self, s):\n            return [w for _, w in zip(_TEST_FILE.pattern, s.split())]\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (R().get(path))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    class R:\n        def get(self, s):\n            return s.split()\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (R().get(path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "partial_function": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef h(s):\n    return [w for _, w in zip(_TEST_FILE.pattern, s.split())]\nF = functools.partial(h)\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (F(path))[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef h(s):\n    return s.split()\nF = functools.partial(h)\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (F(path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "property_receiver": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nclass R:\n    def __init__(self, path):\n        self.path = path\n    @property\n    def value(self):\n        s = self.path\n        return [w for _, w in zip(_TEST_FILE.pattern, s.split())]\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (R(path).value)[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\nclass R:\n    def __init__(self, path):\n        self.path = path\n    @property\n    def value(self):\n        s = self.path\n        return s.split()\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (R(path).value)[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "cost_local_inline": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    toks = path.split()\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (toks)[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (path.split())[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "cost_local_rename": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    toks = path.split()\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (toks)[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    words = path.split()\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (words)[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "cost_constant_rename": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (path.split())[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_MAX_TOKENS = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (path.split())[_MAX_TOKENS:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "cost_tail_extract": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (path.split())[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef tail(s):\n    return s.split()[_LIMIT:]\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or tail(path))\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "cost_dry_receiver": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    unused = path.split()\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (path.split())[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    toks = path.split()\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (toks)[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "cost_split_none": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (path.split())[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (path.split(None))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "cost_receiver_extract": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (path.split())[_LIMIT:])\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef h(s):\n    return s.split()\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (h(path))[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  },
+  "cost_early_return_move": {
+   "base": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\ndef is_test(path: str) -> bool:\n    res = bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or path.split()[_LIMIT:])\n    return True if path.startswith(\".cp/\") else res\n",
+   "post": "import re\nimport functools\nimport itertools\n_TEST_FILE = re.compile(r\"(^|/)test_[^/]*\\.py$\")\n_TEST_DIR = re.compile(r\"(^|/)tests?/\")\n_LIMIT = 2000\n\ndef is_test(path: str) -> bool:\n    if path.startswith(\".cp/\"):\n        return True\n    return bool(_TEST_FILE.search(path) or _TEST_DIR.search(path) or (path.split())[_LIMIT:])\n",
+   "test": "import m\ndef test_it():\n    assert m.is_test(\"tests/test_a.py\")\n    assert not m.is_test(\"src/a.py\")\n    assert m.is_test(\".cp/x\")\n"
+  }
+ }
+}

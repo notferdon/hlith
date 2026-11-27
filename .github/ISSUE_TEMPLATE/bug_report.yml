@@ -1,0 +1,44 @@
+name: Bug report
+description: Report reproducible behavior that does not match the documentation or a refusal that looks wrong.
+title: "[bug] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include credentials, private repository contents, or workstation-specific paths. For suspected security issues, use the private reporting route in SECURITY.md instead.
+  - type: input
+    id: version
+    attributes:
+      label: Hlith build
+      description: Output of `hlith --version`.
+    validations:
+      required: true
+  - type: textarea
+    id: host
+    attributes:
+      label: Host and doctor output
+      description: Linux version, Landlock ABI, and `hlith doctor --json` with identifying paths redacted.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction
+      description: The smallest repository shape, change, and exact command that shows the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and observed result
+      description: The exit status, verdict, and evidence you expected, and what Hlith reported.
+    validations:
+      required: true
+  - type: input
+    id: artifact
+    attributes:
+      label: Artifact or run id (optional)
+      description: A redacted `out.json`, run id, or replay command, if available.
+    validations:
+      required: false

@@ -1,0 +1,10 @@
+{
+ "paths": {
+  "calc.py": [
+   "modify"
+  ],
+  "test_calc.py": [
+   "modify"
+  ]
+ }
+}

@@ -1,0 +1,6149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hlith:run-artifact:cli-2",
+  "title": "HlithRunArtifact",
+  "description": "The JSON that `hlith run --artifact-out` writes (hlith.cli.build_artifact). Every object is closed. cli-2: from the current schema effect.deltas, effect.delta_set_sha256 and top-level deltas are always written, so they are required; artifacts written before that merge lack them and are cli-1. top-level graph is always written since the current schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "feedback",
+    "outcome",
+    "exit_status",
+    "blocking",
+    "landed_commit",
+    "effect",
+    "worker",
+    "target",
+    "incident",
+    "obligations",
+    "deltas",
+    "graph",
+    "run",
+    "effect_account",
+    "delta_rel"
+  ],
+  "properties": {
+    "feedback": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/feedback_report"
+        }
+      ]
+    },
+    "outcome": {
+      "enum": [
+        "landed",
+        "refused"
+      ]
+    },
+    "exit_status": {
+      "enum": [
+        0,
+        4,
+        10,
+        11,
+        12
+      ]
+    },
+    "blocking": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "landed_commit": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^([a-f0-9]{40}|[a-f0-9]{64})$"
+        }
+      ]
+    },
+    "effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "patch_sha256",
+        "proposer_id",
+        "touched_files",
+        "unified_diff",
+        "deltas",
+        "delta_set_sha256"
+      ],
+      "properties": {
+        "patch_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "proposer_id": {
+          "type": "string"
+        },
+        "touched_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unified_diff": {
+          "type": "string"
+        },
+        "deltas": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "#/$defs/intended_delta"
+          }
+        },
+        "delta_set_sha256": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          ],
+          "description": "sha256 of the canonical delta set (sorted by id, JSON sort_keys, separators (',',':'), ensure_ascii); null when no deltas."
+        }
+      }
+    },
+    "worker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "returncode",
+        "stdout",
+        "stderr",
+        "profile_sha256",
+        "ignored_paths",
+        "skipped_paths",
+        "risk_flags"
+      ],
+      "properties": {
+        "returncode": {
+          "type": "integer"
+        },
+        "stdout": {
+          "type": "string"
+        },
+        "stderr": {
+          "type": "string"
+        },
+        "profile_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "ignored_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "skipped_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "risk_flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base_tree",
+        "digest_before",
+        "digest_after_worker",
+        "untouched_by_worker"
+      ],
+      "properties": {
+        "base_tree": {
+          "type": "string",
+          "pattern": "^([a-f0-9]{40}|[a-f0-9]{64})$"
+        },
+        "digest_before": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "digest_after_worker": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "untouched_by_worker": {
+          "type": "boolean"
+        }
+      }
+    },
+    "incident": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/incident"
+        }
+      ]
+    },
+    "obligations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/obligation"
+      }
+    },
+    "deltas": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/delta_report"
+        }
+      ],
+      "description": "null when the effect carries no delta claims; otherwise the claim report (always with a confirmation object)."
+    },
+    "graph": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/graph_report"
+        }
+      ],
+      "description": "null without --layer1; the Layer 1 report with it. Always written since the current schema ."
+    },
+    "effect_account": {
+      "$ref": "#/$defs/effect_account_report"
+    },
+    "run": {
+      "$ref": "#/$defs/run_report"
+    },
+    "delta_rel": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/delta_rel_item"
+      },
+      "description": "delta_rel: REQUIRED, may be []. Non-gating evidence; never read by decide()."
+    },
+    "timings": {
+      "$ref": "#/$defs/timings_report"
+    },
+    "target_python": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["executable", "version", "implementation", "observed_in"],
+      "properties": {
+        "executable": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "implementation": {"type": "string", "minLength": 1},
+        "observed_in": {"const": "confined-differential-worker"}
+      },
+      "description": "Informational, optional, never read by the gate: the interpreter the confined differential worker REPORTED ABOUT ITSELF (sys.executable / sys.version_info / sys.implementation.name seen inside the confinement). Absent when no evaluator started (never inferred from the requested python)."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "landed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "exit_status": {
+            "const": 0
+          },
+          "landed_commit": {
+            "type": "string",
+            "pattern": "^([a-f0-9]{40}|[a-f0-9]{64})$"
+          },
+          "blocking": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "refused"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "exit_status": {
+            "enum": [
+              4,
+              10,
+              11,
+              12
+            ]
+          },
+          "landed_commit": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "description": "no deltas <=> null sha <=> null report",
+      "if": {
+        "properties": {
+          "effect": {
+            "properties": {
+              "deltas": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "deltas": {
+            "type": "null"
+          },
+          "effect": {
+            "properties": {
+              "delta_set_sha256": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "deltas": {
+            "not": {
+              "type": "null"
+            },
+            "properties": {
+              "confirmation": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          "effect": {
+            "properties": {
+              "delta_set_sha256": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "a Layer 1 payload/observed mismatch is an incident: refused, exit 4",
+      "if": {
+        "required": [
+          "graph"
+        ],
+        "properties": {
+          "graph": {
+            "not": {
+              "type": "null"
+            },
+            "required": [
+              "payload_matches_observed"
+            ],
+            "properties": {
+              "payload_matches_observed": {
+                "const": false
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "exit_status": {
+            "const": 4
+          },
+          "outcome": {
+            "const": "refused"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checker_id",
+        "checker_sha256",
+        "confined",
+        "proposer_paths_readable",
+        "profile_sha256",
+        "exit_code"
+      ],
+      "properties": {
+        "checker_id": {
+          "type": "string"
+        },
+        "checker_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "confined": {
+          "type": "boolean"
+        },
+        "proposer_paths_readable": {
+          "type": "boolean"
+        },
+        "profile_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "exit_code": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "description": "How the check ran, recorded by the supervisor (hlith.types.CheckProvenance). Never set by the proposer."
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "executions",
+        "explored",
+        "unexplored"
+      ],
+      "properties": {
+        "executions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "explored": {
+          "type": "string"
+        },
+        "unexplored": {
+          "type": "string"
+        }
+      },
+      "description": "Bounded evidence for a verdict: what was explored and, explicitly, what was not. Never universal correctness."
+    },
+    "obligation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "target_symbol",
+        "claim",
+        "verdict",
+        "stop_reason",
+        "witness",
+        "evidence",
+        "provenance",
+        "account_id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "target_symbol": {
+          "type": "string"
+        },
+        "claim": {
+          "type": "string"
+        },
+        "verdict": {
+          "enum": [
+            "held",
+            "refuted",
+            "not-derived",
+            "unverified"
+          ]
+        },
+        "stop_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "witness": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/evidence"
+            }
+          ]
+        },
+        "provenance": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/provenance"
+            }
+          ]
+        },
+        "account_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^acct-[a-f0-9]{20}$"
+            }
+          ],
+          "description": "obligation.account_id: the effect account this obligation was derived from"
+        }
+      }
+    },
+    "feedback_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "loaded_feedback_ids",
+        "written_feedback_ids",
+        "covered_by_delta",
+        "unpinned_witnesses",
+        "recurrent_in_callee_cone",
+        "superseded_by_delta",
+        "recurrent_constructs"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "pattern": "^run-[a-f0-9]{12}$"
+        },
+        "loaded_feedback_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^fb-[a-f0-9]{20}$"
+          }
+        },
+        "written_feedback_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^fb-[a-f0-9]{20}$"
+          }
+        },
+        "covered_by_delta": {
+          "type": "array",
+          "description": "Post-gate probe divergences NOT pinned because a confirmed, landed intended delta covers them (never dropped silently).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "covered_by_delta",
+              "symbol",
+              "count",
+              "examples"
+            ],
+            "properties": {
+              "covered_by_delta": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.:-]{1,64}$"
+              },
+              "symbol": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "examples": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "items": {
+                  "$ref": "#/$defs/call_input"
+                }
+              }
+            }
+          }
+        },
+        "unpinned_witnesses": {
+          "type": "array",
+          "description": "Refuting calls from the differential that Layer 5 did not pin verbatim (fault injection or size-capped): unresolved and owned.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "symbol",
+              "reason"
+            ],
+            "properties": {
+              "symbol": {
+                "type": "string"
+              },
+              "reason": {
+                "enum": [
+                  "inject",
+                  "truncated",
+                  "incomplete"
+                ]
+              }
+            }
+          }
+        },
+        "recurrent_in_callee_cone": {
+          "type": "array",
+          "description": "A construct that stopped an earlier refused run, now reached only through the callee cone. Non-blocking and visible.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "fb_id",
+              "construct",
+              "callee",
+              "via"
+            ],
+            "properties": {
+              "fb_id": {
+                "type": "string",
+                "pattern": "^fb-[a-f0-9]{20}$"
+              },
+              "construct": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "site"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "site": {
+                    "type": "string"
+                  }
+                }
+              },
+              "callee": {
+                "type": "string"
+              },
+              "via": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "superseded_by_delta": {
+          "type": "array",
+          "description": "Loaded pins NOT applied in this run because the confirmed (human-approved) delta set covers their pinned input; the record is kept and the supersession appended beside it, never deleted.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "fb_id",
+              "delta_id",
+              "delta_set_sha256"
+            ],
+            "properties": {
+              "fb_id": {
+                "type": "string",
+                "pattern": "^fb-[a-f0-9]{20}$"
+              },
+              "delta_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.:-]{1,64}$"
+              },
+              "delta_set_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        },
+        "recurrent_constructs": {
+          "type": "array",
+          "description": "Constructs of this run that already stopped earlier refused runs (Layer 5 not_derived_construct records, matched on file + node digest, changed side). Information, NOT an obligation: the gate blocks through the run's own unresolved-* obligations. One entry per construct.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "construct",
+              "symbol",
+              "earlier_refused_runs",
+              "run_ids",
+              "fb_ids",
+              "note"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^recurrent-[a-f0-9]{20}$"
+              },
+              "construct": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "site",
+                  "node_sha256"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "site": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "node_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                }
+              },
+              "symbol": {
+                "type": "string"
+              },
+              "earlier_refused_runs": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "run_ids": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^run-[a-f0-9]{12}$"
+                }
+              },
+              "fb_ids": {
+                "type": "array",
+                "uniqueItems": true,
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "pattern": "^fb-[a-f0-9]{20}$"
+                }
+              },
+              "note": {
+                "type": "string",
+                "pattern": "^[^\\n\\r]*$"
+              }
+            }
+          }
+        },
+        "feedback_effect": {
+          "type": "object",
+          "description": "per-run counterfactual: what decide() would give over the same derived obligations without the feedback-origin obligations; informational, never the verdict; exact=false (without=null, no flip claimed) when feedback seeded a remaining check's domain",
+          "additionalProperties": false,
+          "required": [
+            "loaded_feedback_ids",
+            "feedback_obligations",
+            "feedback_derived_refutations",
+            "with",
+            "without",
+            "flips",
+            "exit_changes",
+            "feedback_influenced",
+            "exact"
+          ],
+          "properties": {
+            "loaded_feedback_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "feedback_obligations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "with": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "outcome",
+                "exit_status"
+              ],
+              "properties": {
+                "outcome": {
+                  "type": "string",
+                  "enum": [
+                    "landed",
+                    "refused"
+                  ]
+                },
+                "exit_status": {
+                  "type": "integer"
+                }
+              }
+            },
+            "without": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "outcome",
+                    "exit_status"
+                  ],
+                  "properties": {
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "landed",
+                        "refused"
+                      ]
+                    },
+                    "exit_status": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              ]
+            },
+            "flips": {
+              "type": "boolean"
+            },
+            "exit_changes": {
+              "type": "boolean"
+            },
+            "feedback_derived_refutations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "feedback_influenced": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "exact": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "description": "Layer 5 for this run: records loaded before derive, records written after the gate by the supervisor."
+    },
+    "incident": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "missing_sources",
+        "account",
+        "manifest",
+        "observed"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "undeclared-effect",
+            "unreconciled-missing-declaration",
+            "not-modelled",
+            "claim-violation"
+          ],
+          "description": "claim-violation: the stage did something outside the claim (account kind or manifest): REFUTED, labelled. not-modelled: only files the effect account has no record of : NOT_DERIVED, nothing compared. unreconciled-missing-declaration: a required declaration source is missing. undeclared-effect: legacy (before the split), still valid for older artifacts; new emitters use the two specific kinds ."
+        },
+        "missing_sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "account": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "available",
+            "error",
+            "undeclared_files",
+            "undeclared_changes",
+            "declared_unobserved"
+          ],
+          "properties": {
+            "available": {
+              "type": "boolean"
+            },
+            "error": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "undeclared_files": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "undeclared_changes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "path",
+                  "kind"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "enum": [
+                      "add",
+                      "modify",
+                      "delete",
+                      "mode",
+                      "symlink",
+                      "binary"
+                    ]
+                  }
+                }
+              }
+            },
+            "declared_unobserved": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "manifest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "available",
+            "error",
+            "undeclared_files",
+            "undeclared_changes",
+            "claimed_unobserved",
+            "claim_only"
+          ],
+          "properties": {
+            "available": {
+              "type": "boolean"
+            },
+            "error": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "undeclared_files": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "undeclared_changes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "path",
+                  "kind"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "enum": [
+                      "add",
+                      "modify",
+                      "delete",
+                      "mode",
+                      "symlink",
+                      "binary"
+                    ]
+                  }
+                }
+              }
+            },
+            "claimed_unobserved": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "claim_only": {
+              "const": true
+            }
+          }
+        },
+        "observed": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "kinds"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "kinds": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "enum": [
+                    "add",
+                    "modify",
+                    "delete",
+                    "mode",
+                    "symlink",
+                    "binary"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "intended_delta": {
+      "description": "Proposer CLAIM of an intended behaviour change (runtime.validate_delta). Never evidence by itself: it needs independent confirmation (recorded approval of delta_set_sha256). predicate+expected (both or neither) make it machine-checkable; without them it is advisory and can never cover a divergence. Receiver/argument state after the call is NOT part of expected in V1: a delta whose post state also differs still refutes. id uniqueness per set is enforced by the runtime.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "symbol",
+        "kind",
+        "claim",
+        "input_domain",
+        "pre",
+        "post"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,64}$"
+        },
+        "symbol": {
+          "type": "string",
+          "maxLength": 200,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$"
+        },
+        "kind": {
+          "enum": [
+            "behavior",
+            "signature",
+            "exception",
+            "side-effect"
+          ]
+        },
+        "claim": {
+          "type": "string",
+          "maxLength": 500,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$",
+          "minLength": 1
+        },
+        "input_domain": {
+          "type": "string",
+          "maxLength": 300,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "pre": {
+          "type": "string",
+          "maxLength": 300,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "post": {
+          "type": "string",
+          "maxLength": 300,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "predicate": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "inputs"
+              ],
+              "properties": {
+                "type": {
+                  "const": "literal_inputs"
+                },
+                "inputs": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 50,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "args",
+                      "kwargs"
+                    ],
+                    "properties": {
+                      "args": {
+                        "type": "array"
+                      },
+                      "kwargs": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "param",
+                "class"
+              ],
+              "properties": {
+                "type": {
+                  "const": "typed"
+                },
+                "param": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,99}$"
+                },
+                "class": {
+                  "enum": [
+                    "empty_str",
+                    "none",
+                    "int_zero",
+                    "int_neg",
+                    "int_nonneg",
+                    "str_nonempty",
+                    "empty_container",
+                    "mapping_key_absent",
+                    "bool"
+                  ]
+                },
+                "key": {
+                  "type": "string",
+                  "maxLength": 100,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "class": {
+                        "const": "mapping_key_absent"
+                      }
+                    }
+                  },
+                  "then": {
+                    "required": [
+                      "key"
+                    ]
+                  },
+                  "else": {
+                    "not": {
+                      "required": [
+                        "key"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "param",
+                "expr"
+              ],
+              "description": "Boolean expression over the declared param. Shape and length only here; the grammar (closed AST whitelist, depth/node caps) is owned by differential, which rejects a bad expression fail-closed (UNVERIFIED).",
+              "properties": {
+                "type": {
+                  "const": "expr"
+                },
+                "param": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,99}$"
+                },
+                "expr": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 400,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+                }
+              }
+            }
+          ]
+        },
+        "expected": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "value_repr"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "returns"
+                },
+                "value_repr": {
+                  "type": "string",
+                  "maxLength": 300,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "expr"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "returns_expr"
+                },
+                "expr": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 400,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]*$",
+                  "description": "COMPUTED post value over the callable's bound parameters, in the closed grammar of hlith.expected_expr (validated there; never eval'd). The approval hash covers this text."
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "exc_type"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "raises"
+                },
+                "exc_type": {
+                  "type": "string",
+                  "maxLength": 100,
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+$"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "dependentRequired": {
+        "predicate": [
+          "expected"
+        ],
+        "expected": [
+          "predicate"
+        ]
+      }
+    },
+    "call_input": {
+      "type": "object",
+      "required": [
+        "args",
+        "kwargs"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "args": {
+          "type": "array"
+        },
+        "kwargs": {
+          "type": "object"
+        },
+        "env": {
+          "type": "object",
+          "description": "environment variables set for the call; null unsets",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "return",
+            "raise",
+            "timeout"
+          ]
+        },
+        "repr": {
+          "type": "string"
+        },
+        "exc": {
+          "type": "string"
+        },
+        "args_after": {
+          "type": "string",
+          "description": "repr of (args, kwargs) after the call, present only when the call mutated them"
+        }
+      }
+    },
+    "feedback_record": {
+      "type": "object",
+      "required": [
+        "feedback_id",
+        "schema_version",
+        "source_run_id",
+        "target_symbols",
+        "directive_kind",
+        "directive_payload"
+      ],
+      "properties": {
+        "feedback_id": {
+          "type": "string",
+          "pattern": "^fb-[a-f0-9]{20}$"
+        },
+        "schema_version": {
+          "type": "string",
+          "const": "0.1.0"
+        },
+        "source_run_id": {
+          "type": "string"
+        },
+        "target_symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "directive_kind": {
+          "type": "string",
+          "enum": [
+            "require_differential_domain_constraint",
+            "mark_construct_unresolvable",
+            "pin_regression_counterexample",
+            "oracle_regression",
+            "not_derived_construct"
+          ]
+        },
+        "directive_payload": {
+          "type": "object"
+        },
+        "provenance": {
+          "type": "object",
+          "required": [
+            "writer_run_id",
+            "origin_kind",
+            "observed_in_run",
+            "f2_novelty_eligible",
+            "scope"
+          ],
+          "properties": {
+            "writer_run_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "origin_kind": {
+              "type": "string",
+              "enum": [
+                "unknown-legacy",
+                "refusal-probe",
+                "post-gate-probe",
+                "differential-witness",
+                "external-pin",
+                "predeclared-external-pin",
+                "unresolved-construct"
+              ]
+            },
+            "observed_in_run": {
+              "type": "string",
+              "enum": [
+                "unknown",
+                "refused",
+                "refuted",
+                "external"
+              ]
+            },
+            "f2_novelty_eligible": {
+              "type": "boolean"
+            },
+            "scope": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "directive_kind": {
+                "const": "pin_regression_counterexample"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "directive_payload": {
+                "type": "object",
+                "required": [
+                  "symbol",
+                  "input",
+                  "expected",
+                  "observed"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "symbol": {
+                    "type": "string"
+                  },
+                  "input": {
+                    "$ref": "#/$defs/call_input"
+                  },
+                  "expected": {
+                    "$ref": "#/$defs/outcome"
+                  },
+                  "observed": {
+                    "$ref": "#/$defs/outcome"
+                  },
+                  "probe": {
+                    "type": "object",
+                    "description": "extended post-landing probe replay data: family, derandomised seed, the input's origin (a seeded family or a repository call site) and the probe's total wall budget in seconds",
+                    "required": [
+                      "family",
+                      "seed",
+                      "origin",
+                      "budget_s"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "family": {
+                        "type": "string",
+                        "maxLength": 32
+                      },
+                      "seed": {
+                        "type": "integer"
+                      },
+                      "origin": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "budget_s": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "directive_kind": {
+                "const": "require_differential_domain_constraint"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "directive_payload": {
+                "type": "object",
+                "required": [
+                  "pinned_inputs",
+                  "disallow_exception_widening"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "pinned_inputs": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "$ref": "#/$defs/call_input"
+                    }
+                  },
+                  "disallow_exception_widening": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "directive_kind": {
+                "const": "mark_construct_unresolvable"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "directive_payload": {
+                "type": "object",
+                "required": [
+                  "symbol",
+                  "construct_kind",
+                  "location"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "symbol": {
+                    "type": "string"
+                  },
+                  "construct_kind": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "location": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "directive_kind": {
+                "const": "oracle_regression"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "directive_payload": {
+                "type": "object",
+                "required": [
+                  "symbol",
+                  "tests",
+                  "input",
+                  "expected",
+                  "observed"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "symbol": {
+                    "type": "string"
+                  },
+                  "input": {
+                    "$ref": "#/$defs/call_input"
+                  },
+                  "expected": {
+                    "$ref": "#/$defs/outcome"
+                  },
+                  "observed": {
+                    "$ref": "#/$defs/outcome"
+                  },
+                  "tests": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "repository tests referencing the symbol that a held verdict relied on and that missed the divergence"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "directive_kind": {
+                "const": "not_derived_construct"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "directive_payload": {
+                "type": "object",
+                "required": [
+                  "symbol",
+                  "construct_kind",
+                  "location",
+                  "node_sha256"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "symbol": {
+                    "type": "string"
+                  },
+                  "construct_kind": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "location": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "node_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$",
+                    "description": "sha256 of the construct's source node (effect account provenance); the record applies only while the same node is present"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "v0_design": {
+      "description": "Retained v0 artifact shape for reference. NOT written by cli.build_artifact and not referenced. It validates nothing.",
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "pattern": "^0\\.[0-9]+\\.[0-9]+$",
+          "const": "0.1.0"
+        },
+        "run": {
+          "type": "object",
+          "required": [
+            "run_id",
+            "thread_id",
+            "checkpoint_id",
+            "repository_url",
+            "base_commit_sha",
+            "base_tree_sha256",
+            "started_at_utc",
+            "loaded_feedback_ids"
+          ],
+          "properties": {
+            "run_id": {
+              "type": "string"
+            },
+            "thread_id": {
+              "type": "string"
+            },
+            "checkpoint_id": {
+              "type": "string"
+            },
+            "repository_url": {
+              "type": "string"
+            },
+            "base_commit_sha": {
+              "type": "string"
+            },
+            "base_tree_sha256": {
+              "type": "string",
+              "pattern": "^([a-f0-9]{40}|[a-f0-9]{64})$"
+            },
+            "started_at_utc": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "loaded_feedback_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "proposed_effect": {
+          "type": "object",
+          "required": [
+            "effect_id",
+            "patch_sha256",
+            "unified_diff",
+            "touched_files",
+            "proposer_id"
+          ],
+          "properties": {
+            "effect_id": {
+              "type": "string"
+            },
+            "patch_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "unified_diff": {
+              "type": "string",
+              "minLength": 1
+            },
+            "touched_files": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            },
+            "proposer_id": {
+              "type": "string"
+            },
+            "deltas": {
+              "type": "array",
+              "maxItems": 200,
+              "items": {
+                "$ref": "#/$defs/intended_delta"
+              }
+            },
+            "delta_set_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "description": "sha256 of the canonical delta set: sorted by id, JSON sort_keys, separators (',',':'), ensure_ascii."
+            }
+          },
+          "dependentRequired": {
+            "deltas": [
+              "delta_set_sha256"
+            ],
+            "delta_set_sha256": [
+              "deltas"
+            ]
+          }
+        },
+        "effect_account": {
+          "type": "object",
+          "required": [
+            "account_id",
+            "effect_id",
+            "language",
+            "modified_callables",
+            "impacted_call_sites",
+            "side_effect_primitives_delta",
+            "unresolved_constructs",
+            "impacted_test_nodes"
+          ],
+          "properties": {
+            "account_id": {
+              "type": "string"
+            },
+            "effect_id": {
+              "type": "string"
+            },
+            "language": {
+              "type": "string",
+              "enum": [
+                "python"
+              ]
+            },
+            "modified_callables": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "qualified_name",
+                  "file_path",
+                  "pre_signature",
+                  "post_signature",
+                  "pre_exceptions",
+                  "post_exceptions"
+                ],
+                "properties": {
+                  "qualified_name": {
+                    "type": "string"
+                  },
+                  "file_path": {
+                    "type": "string"
+                  },
+                  "pre_signature": {
+                    "type": "string"
+                  },
+                  "post_signature": {
+                    "type": "string"
+                  },
+                  "pre_exceptions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "post_exceptions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "impacted_call_sites": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "caller_qualified_name",
+                  "callee_qualified_name",
+                  "file_path",
+                  "line_number",
+                  "arg_structure"
+                ],
+                "properties": {
+                  "caller_qualified_name": {
+                    "type": "string"
+                  },
+                  "callee_qualified_name": {
+                    "type": "string"
+                  },
+                  "file_path": {
+                    "type": "string"
+                  },
+                  "line_number": {
+                    "type": "integer"
+                  },
+                  "arg_structure": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "side_effect_primitives_delta": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "unresolved_constructs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "file_path",
+                  "line_number",
+                  "construct_kind",
+                  "reason"
+                ],
+                "properties": {
+                  "file_path": {
+                    "type": "string"
+                  },
+                  "line_number": {
+                    "type": "integer"
+                  },
+                  "construct_kind": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "impacted_test_nodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "obligations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "obligation_id",
+              "account_id",
+              "obligation_class",
+              "target_symbol",
+              "claim_specification",
+              "verdict",
+              "provenance",
+              "derivation_stop_reason",
+              "counterexample_witness",
+              "evidence"
+            ],
+            "properties": {
+              "obligation_id": {
+                "type": "string"
+              },
+              "account_id": {
+                "type": "string"
+              },
+              "obligation_class": {
+                "type": "string",
+                "const": "call_boundary_and_behavioral_compatibility"
+              },
+              "target_symbol": {
+                "type": "string"
+              },
+              "claim_specification": {
+                "type": "string"
+              },
+              "verdict": {
+                "type": "string",
+                "enum": [
+                  "held",
+                  "refuted",
+                  "not-derived",
+                  "unverified"
+                ]
+              },
+              "derivation_stop_reason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "counterexample_witness": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provenance": {
+                "description": "How the check ran, recorded by the supervisor (hlith.types.CheckProvenance). Never set by the proposer.",
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "required": [
+                  "checker_id",
+                  "checker_sha256",
+                  "confined",
+                  "proposer_paths_readable",
+                  "profile_sha256",
+                  "exit_code"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "checker_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "checker_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "confined": {
+                    "type": "boolean"
+                  },
+                  "proposer_paths_readable": {
+                    "type": "boolean"
+                  },
+                  "profile_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "exit_code": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "evidence": {
+                "description": "Bounded evidence (hlith.types.BoundedEvidence). held never means universal correctness.",
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "required": [
+                  "executions",
+                  "explored",
+                  "unexplored"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "executions": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "explored": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "unexplored": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "verdict": {
+                      "const": "held"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "provenance": {
+                      "type": "object",
+                      "properties": {
+                        "confined": {
+                          "const": true
+                        },
+                        "proposer_paths_readable": {
+                          "const": false
+                        },
+                        "exit_code": {
+                          "const": 0
+                        }
+                      }
+                    },
+                    "evidence": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "gate": {
+          "type": "object",
+          "required": [
+            "outcome",
+            "exit_status",
+            "evaluated_obligation_ids",
+            "blocking_obligation_ids",
+            "landed_commit_sha"
+          ],
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "enum": [
+                "landed",
+                "refused"
+              ]
+            },
+            "exit_status": {
+              "type": "integer",
+              "enum": [
+                0,
+                4,
+                10,
+                11,
+                12
+              ]
+            },
+            "evaluated_obligation_ids": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            },
+            "blocking_obligation_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "landed_commit_sha": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "run",
+        "proposed_effect",
+        "effect_account",
+        "obligations",
+        "gate",
+        "feedback_record"
+      ]
+    },
+    "delta_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim_only",
+        "advisory_ids",
+        "confirmation"
+      ],
+      "description": "Proposer delta claims for this run. claim_only: never proof. advisory_ids: deltas without predicate+expected.",
+      "properties": {
+        "claim_only": {
+          "const": true
+        },
+        "advisory_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.:-]{1,64}$"
+          }
+        },
+        "confirmation": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "confirmer",
+                "matched",
+                "delta_set_sha256",
+                "approved_sha256",
+                "reason",
+                "provenance"
+              ],
+              "properties": {
+                "confirmer": {
+                  "enum": [
+                    "human-approval",
+                    null
+                  ]
+                },
+                "matched": {
+                  "type": "boolean"
+                },
+                "delta_set_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "approved_sha256": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "provenance": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "description": "CheckProvenance-shaped record of a human approval: not a confined process, so it can never back a held obligation; it only unblocks.",
+                      "required": [
+                        "checker_id",
+                        "checker_sha256",
+                        "confined",
+                        "proposer_paths_readable",
+                        "profile_sha256",
+                        "exit_code"
+                      ],
+                      "properties": {
+                        "checker_id": {
+                          "type": "string"
+                        },
+                        "checker_sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "confined": {
+                          "const": false
+                        },
+                        "proposer_paths_readable": {
+                          "const": false
+                        },
+                        "profile_sha256": {
+                          "type": "string",
+                          "pattern": "^([a-f0-9]{64}|n/a:human)$"
+                        },
+                        "exit_code": {
+                          "const": 0
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "graph_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Layer 1 (optional LangGraph orchestration, --layer1): interrupt before the gate, checkpointed state, resume. A payload/observed mismatch is an incident (exit 4). A delivered artifact always has payload_matches_observed=true: a mismatch exits 4 with no artifact; the false case stays valid here (refused, exit 4) only for mutation tests.",
+      "required": [
+        "layer1",
+        "langgraph_version",
+        "checkpoint_sqlite_version",
+        "thread_id",
+        "checkpoint_ns",
+        "interrupt_checkpoint_id",
+        "final_checkpoint_id",
+        "interrupt_payload",
+        "payload_matches_observed",
+        "resumed",
+        "feedback_node_ran",
+        "resume_error",
+        "feedback_executions",
+        "socket_events",
+        "socket_events_scope"
+      ],
+      "properties": {
+        "layer1": {
+          "const": "langgraph"
+        },
+        "langgraph_version": {
+          "type": "string"
+        },
+        "checkpoint_sqlite_version": {
+          "type": "string"
+        },
+        "thread_id": {
+          "type": "string"
+        },
+        "checkpoint_ns": {
+          "type": "string"
+        },
+        "interrupt_checkpoint_id": {
+          "type": "string"
+        },
+        "final_checkpoint_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "interrupt_payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "node",
+            "claimed_paths",
+            "claimed_digest"
+          ],
+          "properties": {
+            "node": {
+              "type": "string"
+            },
+            "claimed_paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "claimed_digest": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "description": "sha256 of the sorted path -> mode + content-digest claim the graph measured (not a patch hash)."
+            }
+          }
+        },
+        "payload_matches_observed": {
+          "type": "boolean"
+        },
+        "resumed": {
+          "type": "boolean"
+        },
+        "feedback_node_ran": {
+          "type": "boolean"
+        },
+        "resume_error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "feedback_executions": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "times the feedback node ran (proves exactly once)"
+        },
+        "socket_events": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "audit-hook log of socket events in the confined graph process"
+        },
+        "socket_events_scope": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Which process the socket_events audit covers (the confined graph driver; the worker child is not audited; kernel denial is the control)."
+        },
+        "proposer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "model_id",
+            "plumbing_only",
+            "turns",
+            "reply_sha256"
+          ],
+          "description": "Layer 1 agent run: who wrote the change (supervisor-side proposer; credentials never enter the worker). plumbing_only true = a scripted mock proves the loop and the confinement, NOT agent behaviour.",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "model_id": {
+              "type": "string"
+            },
+            "plumbing_only": {
+              "type": "boolean"
+            },
+            "turns": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reply_sha256": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "command_argv_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "description": "hash of the exact local CommandProposer argv array; raw argv is not disclosed"
+            },
+            "redo_inflight": {
+              "type": "boolean",
+              "description": "true only when the operator explicitly requested repeating a proposer call whose completion was indeterminate"
+            },
+            "redone_turn": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "turn repeated under --redo-inflight"
+            },
+            "progress_not_durable_at_turns": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "thread_store": {
+          "type": "string",
+          "description": "directory of the durable LangGraph thread store the paused thread was persisted to (hlith resume THREAD_ID reads it)"
+        }
+      }
+    },
+    "acct_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "analysis_pass",
+        "resolution",
+        "source_file",
+        "source_line",
+        "node_sha256"
+      ],
+      "properties": {
+        "analysis_pass": {
+          "type": "string"
+        },
+        "resolution": {
+          "enum": [
+            "resolved",
+            "assumed",
+            "unresolved"
+          ]
+        },
+        "source_file": {
+          "type": "string"
+        },
+        "source_line": {
+          "type": "integer"
+        },
+        "node_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "local_binding_provenance": {
+          "type": "object",
+          "description": "Optional (add-only, 2026-11-19): complete-local-binding evidence for a return shape resolved through local assignments (assignment scan flags, scope, assignment list). Consumed read-only by the return-shape adapter; absent means 'not proven'."
+        },
+        "alias_targets": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pre": {
+              "type": "string"
+            },
+            "post": {
+              "type": "string"
+            }
+          },
+          "description": "Optional pre/post resolved targets of a changed type alias."
+        },
+        "forwarded_keyword_mapping": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "analysis_pass": {
+              "type": "string"
+            },
+            "resolution": {
+              "enum": [
+                "resolved",
+                "assumed",
+                "unresolved"
+              ]
+            },
+            "source_file": {
+              "type": "string"
+            },
+            "source_line": {
+              "type": "integer"
+            },
+            "node_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "callee": {
+              "type": "string"
+            },
+            "keyword_parameters": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "extra_keywords_accepted": {
+              "type": "boolean"
+            },
+            "keyword_dict": {
+              "type": "string"
+            },
+            "keyword_defaults": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Optional signature-derived mapping for forwarded keyword arguments."
+        }
+      },
+      "description": "Effect-account claim provenance : which pass made the claim, from which source node."
+    },
+    "acct_site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file",
+        "line"
+      ],
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer"
+        }
+      }
+    },
+    "acct_entry_guard": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "raises_when",
+            "param",
+            "raised_exception",
+            "condition_source",
+            "condition_sha256",
+            "file_path",
+            "line_number",
+            "node_id",
+            "provenance"
+          ],
+          "properties": {
+            "raises_when": {
+              "enum": [
+                "none",
+                "empty",
+                "falsy",
+                "truthy"
+              ]
+            },
+            "param": {
+              "type": "string"
+            },
+            "raised_exception": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+$"
+            },
+            "condition_source": {
+              "type": "string",
+              "minLength": 1
+            },
+            "condition_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "file_path": {
+              "type": "string"
+            },
+            "line_number": {
+              "type": "integer"
+            },
+            "node_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "provenance": {
+              "$ref": "#/$defs/acct_guard_provenance"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "raises_when",
+            "param",
+            "raised_exception",
+            "condition_source",
+            "condition_sha256",
+            "file_path",
+            "line_number",
+            "node_id",
+            "provenance",
+            "literal"
+          ],
+          "properties": {
+            "raises_when": {
+              "const": "contains_literal"
+            },
+            "param": {
+              "type": "string"
+            },
+            "raised_exception": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+$"
+            },
+            "condition_source": {
+              "type": "string",
+              "minLength": 1
+            },
+            "condition_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "file_path": {
+              "type": "string"
+            },
+            "line_number": {
+              "type": "integer"
+            },
+            "node_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "provenance": {
+              "$ref": "#/$defs/acct_guard_provenance"
+            },
+            "literal": {
+              "type": "string",
+              "description": "raw literal text"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "raises_when",
+            "param",
+            "raised_exception",
+            "condition_source",
+            "condition_sha256",
+            "file_path",
+            "line_number",
+            "node_id",
+            "provenance",
+            "operator",
+            "literal"
+          ],
+          "properties": {
+            "raises_when": {
+              "const": "compare"
+            },
+            "param": {
+              "type": "string"
+            },
+            "raised_exception": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+$"
+            },
+            "condition_source": {
+              "type": "string",
+              "minLength": 1
+            },
+            "condition_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "file_path": {
+              "type": "string"
+            },
+            "line_number": {
+              "type": "integer"
+            },
+            "node_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "provenance": {
+              "$ref": "#/$defs/acct_guard_provenance"
+            },
+            "operator": {
+              "enum": [
+                "==",
+                "!=",
+                "<",
+                "<=",
+                ">",
+                ">="
+              ]
+            },
+            "literal": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Python source of an int (any operator) or str (== / != only); bool excluded"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "raises_when",
+            "param",
+            "raised_exception",
+            "condition_source",
+            "condition_sha256",
+            "file_path",
+            "line_number",
+            "node_id",
+            "provenance",
+            "type",
+            "negated"
+          ],
+          "properties": {
+            "raises_when": {
+              "const": "isinstance"
+            },
+            "param": {
+              "type": "string"
+            },
+            "raised_exception": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+$"
+            },
+            "condition_source": {
+              "type": "string",
+              "minLength": 1
+            },
+            "condition_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "file_path": {
+              "type": "string"
+            },
+            "line_number": {
+              "type": "integer"
+            },
+            "node_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "provenance": {
+              "$ref": "#/$defs/acct_guard_provenance"
+            },
+            "type": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "pattern": "^builtins\\.[A-Za-z_][A-Za-z0-9_]*$"
+              }
+            },
+            "negated": {
+              "type": "boolean"
+            }
+          }
+        }
+      ],
+      "description": "Modelled entry guard: discriminated on raises_when; every variant carries the raised exception, condition source + sha256, site, node and provenance. No legacy plain form; an unresolved exception stays an unsupported_entry_guard construct."
+    },
+    "acct_arg_structure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n_positional",
+        "keywords",
+        "star_args",
+        "star_kwargs",
+        "arg_literals",
+        "is_method_call"
+      ],
+      "properties": {
+        "n_positional": {
+          "type": "integer"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "star_args": {
+          "type": "boolean"
+        },
+        "star_kwargs": {
+          "type": "boolean"
+        },
+        "arg_literals": {
+          "type": "object"
+        },
+        "is_method_call": {
+          "type": "boolean"
+        },
+        "forwarded_keyword_parameters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "extra_keywords_accepted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "acct_call_site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caller_qualified_name",
+        "callee_qualified_name",
+        "file_path",
+        "line_number",
+        "n_positional",
+        "keywords",
+        "star_args",
+        "star_kwargs",
+        "arg_literals",
+        "arg_sources",
+        "is_method_call",
+        "node_source",
+        "arg_structure",
+        "provenance"
+      ],
+      "properties": {
+        "caller_qualified_name": {
+          "type": "string"
+        },
+        "callee_qualified_name": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer"
+        },
+        "n_positional": {
+          "type": "integer"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "star_args": {
+          "type": "boolean"
+        },
+        "star_kwargs": {
+          "type": "boolean"
+        },
+        "arg_literals": {
+          "type": "object",
+          "description": "position or keyword -> literal value"
+        },
+        "arg_sources": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "position -> source text"
+        },
+        "is_method_call": {
+          "type": "boolean"
+        },
+        "forwarded_keyword_parameters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "extra_keywords_accepted": {
+          "type": "boolean"
+        },
+        "node_source": {
+          "type": "string"
+        },
+        "arg_structure": {
+          "$ref": "#/$defs/acct_arg_structure"
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "side": {
+          "type": "string",
+          "enum": ["pre", "post"],
+          "description": "tree the site was resolved on: impacted_call_sites = pre, post_call_sites and nested added/deleted sites = post"
+        }
+      }
+    },
+    "acct_exception_claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "resolution",
+        "provenance"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "resolution": {
+          "enum": [
+            "resolved",
+            "assumed",
+            "unresolved"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        }
+      }
+    },
+    "acct_modified_callable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qualified_name",
+        "file_path",
+        "line_number",
+        "pre_signature",
+        "post_signature",
+        "pre_entry_guards",
+        "entry_guards",
+        "provenance",
+        "pre_exceptions",
+        "post_exceptions",
+        "pre_exception_claims",
+        "post_exception_claims"
+      ],
+      "properties": {
+        "qualified_name": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer"
+        },
+        "pre_signature": {
+          "type": "string"
+        },
+        "post_signature": {
+          "type": "string"
+        },
+        "pre_entry_guards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_entry_guard"
+          }
+        },
+        "entry_guards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_entry_guard"
+          }
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_callable_provenance"
+        },
+        "pre_exceptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "post_exceptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "pre_exception_claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_exception_claim"
+          }
+        },
+        "post_exception_claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_exception_claim"
+          }
+        },
+        "pre_return_signature": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "post_return_signature": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pre_return_shapes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_return_shape"
+          }
+        },
+        "post_return_shapes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_return_shape"
+          }
+        }
+      }
+    },
+    "acct_path_edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caller_qualified_name",
+        "callee_qualified_name",
+        "site",
+        "provenance"
+      ],
+      "properties": {
+        "caller_qualified_name": {
+          "type": "string"
+        },
+        "callee_qualified_name": {
+          "type": "string"
+        },
+        "site": {
+          "$ref": "#/$defs/acct_site"
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        }
+      }
+    },
+    "acct_reached_from": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caller_qualified_name",
+        "caller_module",
+        "kind",
+        "path",
+        "path_edges",
+        "site",
+        "provenance"
+      ],
+      "properties": {
+        "caller_qualified_name": {
+          "type": "string"
+        },
+        "caller_module": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "direct",
+            "transitive"
+          ]
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "path_edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_path_edge"
+          }
+        },
+        "site": {
+          "$ref": "#/$defs/acct_site"
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        }
+      }
+    },
+    "acct_unknown_edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_path",
+        "line_number",
+        "caller_qualified_name",
+        "target_qualified_name",
+        "reason",
+        "provenance",
+        "side"
+      ],
+      "properties": {
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer"
+        },
+        "caller_qualified_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "target_qualified_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "side": {
+          "enum": [
+            "pre",
+            "post",
+            "both"
+          ],
+          "description": "base side, changed side or both "
+        }
+      }
+    },
+    "acct_added_callable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qualified_name",
+        "module",
+        "file_path",
+        "post_signature",
+        "provenance",
+        "post_call_sites",
+        "reached_from",
+        "entry_guards",
+        "unknown_edges",
+        "unexplored_scope",
+        "post_exceptions",
+        "post_exception_claims"
+      ],
+      "properties": {
+        "qualified_name": {
+          "type": "string"
+        },
+        "module": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "post_signature": {
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_callable_provenance"
+        },
+        "post_call_sites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_call_site"
+          }
+        },
+        "reached_from": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_reached_from"
+          }
+        },
+        "entry_guards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_entry_guard"
+          }
+        },
+        "unknown_edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_unknown_edge"
+          }
+        },
+        "unexplored_scope": {
+          "type": "string"
+        },
+        "post_exceptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "post_exception_claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_exception_claim"
+          }
+        }
+      }
+    },
+    "acct_side_effect_primitive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qualified_name",
+        "primitive",
+        "file_path",
+        "line_number",
+        "delta",
+        "provenance"
+      ],
+      "properties": {
+        "qualified_name": {
+          "type": "string"
+        },
+        "primitive": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer"
+        },
+        "delta": {
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        }
+      }
+    },
+    "acct_unresolved_construct": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_path",
+        "line_number",
+        "kind",
+        "source",
+        "scope",
+        "caller_qualified_name",
+        "target_qualified_name",
+        "provenance",
+        "side",
+        "raised_exception",
+        "condition_source",
+        "condition_sha256",
+        "node_id"
+      ],
+      "properties": {
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "description": "e.g. dynamic_getattr, unsupported_entry_guard, syntax_parser_disagreement (tree-sitter vs LibCST)"
+        },
+        "source": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "caller_qualified_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "target_qualified_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provenance": {
+          "type": "object",
+          "description": "acct_guard_provenance (with the required assumptions) when kind is unsupported_entry_guard, else acct_provenance; selected in allOf"
+        },
+        "side": {
+          "enum": [
+            "pre",
+            "post",
+            "both"
+          ],
+          "description": "base side, changed side or both "
+        },
+        "raised_exception": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "exception a guard raises (module-qualified when resolved), else null"
+        },
+        "condition_source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "source text of the guard condition, else null"
+        },
+        "condition_sha256": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          ],
+          "description": "sha256 of condition_source"
+        },
+        "node_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "syntax node id of the construct "
+        },
+        "record_node_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "module_level_change only: node_id of the modified_module_level row this blocker stands for (omitted otherwise)"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "unsupported_entry_guard"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "condition_source": {
+                "type": "string"
+              },
+              "condition_sha256": {
+                "type": "string"
+              },
+              "provenance": {
+                "$ref": "#/$defs/acct_guard_provenance"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "provenance": {
+                "$ref": "#/$defs/acct_provenance"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "acct_getattr_read": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_path",
+        "line_number",
+        "caller_qualified_name",
+        "attribute",
+        "attr_assignment",
+        "node_source",
+        "provenance",
+        "read_node_sha256"
+      ],
+      "properties": {
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer"
+        },
+        "caller_qualified_name": {
+          "type": "string"
+        },
+        "attribute": {
+          "type": "string"
+        },
+        "attr_assignment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "file_path",
+            "line_number"
+          ],
+          "properties": {
+            "file_path": {
+              "type": "string"
+            },
+            "line_number": {
+              "type": "integer"
+            }
+          }
+        },
+        "node_source": {
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "read_node_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "acct_test_node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "file",
+        "line",
+        "reaches",
+        "exists_in_base",
+        "provenance"
+      ],
+      "properties": {
+        "node_id": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer"
+        },
+        "reaches": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exists_in_base": {
+          "type": "boolean"
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        }
+      }
+    },
+    "acct_ctor_site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "args",
+        "kwargs",
+        "file",
+        "line"
+      ],
+      "properties": {
+        "all_literal": {
+          "type": "boolean"
+        },
+        "args": {
+          "type": "array"
+        },
+        "kwargs": {
+          "type": "object",
+          "description": "name -> literal value"
+        },
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer"
+        }
+      }
+    },
+    "acct_param_fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "annotation",
+        "attr_container",
+        "attr_reads",
+        "attr_writes",
+        "class_candidates",
+        "container_use",
+        "test_field_seeds"
+      ],
+      "properties": {
+        "annotation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "attr_container": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "attr_reads": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attr_writes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "class_candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_class_candidate"
+          }
+        },
+        "container_use": {
+          "type": "boolean"
+        },
+        "test_field_seeds": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {}
+          }
+        }
+      }
+    },
+    "acct_caller_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "call_site",
+        "caller_qualname",
+        "class_qualname",
+        "classmethod",
+        "constructor",
+        "constructor_sites",
+        "defined_on",
+        "effect_flags",
+        "field_writes",
+        "fields_read",
+        "method_signature",
+        "module",
+        "non_literal_constructor_site_count",
+        "parameter_facts",
+        "provenance",
+        "receiver_expression",
+        "staticmethod",
+        "target_arg_flow",
+        "target_qualified_name"
+      ],
+      "properties": {
+        "call_site": {
+          "$ref": "#/$defs/acct_site"
+        },
+        "caller_qualname": {
+          "type": "string"
+        },
+        "class_qualname": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "classmethod": {
+          "type": "boolean"
+        },
+        "constructor": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "all_non_self_defaults_literal",
+                "all_required_non_self_params_have_literal_defaults",
+                "classmethod",
+                "custom_metaclass",
+                "custom_new",
+                "no_required_non_self_params",
+                "signature",
+                "staticmethod"
+              ],
+              "properties": {
+                "all_non_self_defaults_literal": {
+                  "type": "boolean"
+                },
+                "all_required_non_self_params_have_literal_defaults": {
+                  "type": "boolean"
+                },
+                "classmethod": {
+                  "type": "boolean"
+                },
+                "custom_metaclass": {
+                  "type": "boolean"
+                },
+                "custom_new": {
+                  "type": "boolean"
+                },
+                "no_required_non_self_params": {
+                  "type": "boolean"
+                },
+                "signature": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "staticmethod": {
+                  "type": "boolean"
+                }
+              }
+            }
+          ]
+        },
+        "constructor_sites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_ctor_site"
+          }
+        },
+        "defined_on": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effect_flags": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "caller",
+            "constructor"
+          ],
+          "properties": {
+            "caller": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/acct_effect_flag"
+              }
+            },
+            "constructor": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/acct_effect_flag"
+              }
+            }
+          }
+        },
+        "field_writes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "field",
+              "file",
+              "line",
+              "source",
+              "value"
+            ],
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "file": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer"
+              },
+              "source": {
+                "enum": [
+                  "__init__",
+                  "test_setup"
+                ]
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "fields_read": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "field",
+              "line"
+            ],
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "method_signature": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "module": {
+          "type": "string"
+        },
+        "non_literal_constructor_site_count": {
+          "type": "integer"
+        },
+        "parameter_facts": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/acct_param_fact"
+          }
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "receiver_expression": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "staticmethod": {
+          "type": "boolean"
+        },
+        "target_arg_flow": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "param"
+                ],
+                "properties": {
+                  "param": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "field"
+                ],
+                "properties": {
+                  "field": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "expr",
+                  "resolved"
+                ],
+                "properties": {
+                  "expr": {
+                    "type": "string"
+                  },
+                  "resolved": {
+                    "const": false
+                  }
+                }
+              }
+            ]
+          },
+          "description": "_target_arg_flow: target param -> caller param | receiver field | unresolved expression"
+        },
+        "target_qualified_name": {
+          "type": "string"
+        }
+      }
+    },
+    "effect_account_dict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "modified_callables",
+        "added_callables",
+        "impacted_call_sites",
+        "post_call_sites",
+        "side_effect_primitives_delta",
+        "unresolved_constructs",
+        "unknown_edges",
+        "unknown_edge_count",
+        "caller_contexts",
+        "expanded_getattr_reads",
+        "ast_equal_files",
+        "caller_set_closed",
+        "caller_set_unexplored",
+        "callee_set_closed",
+        "callee_set_unexplored",
+        "closure_provenance",
+        "unexplored_scope",
+        "impacted_test_nodes",
+        "transitive_call_paths",
+        "deleted_callables",
+        "modified_constants",
+        "callee_edges",
+        "callee_unresolved_constructs",
+        "modified_class_attributes",
+        "opaque_caller_guards",
+        "modified_module_level"
+      ],
+      "properties": {
+        "modified_callables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_modified_callable"
+          }
+        },
+        "added_callables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_added_callable"
+          }
+        },
+        "impacted_call_sites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_call_site"
+          }
+        },
+        "post_call_sites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_call_site"
+          }
+        },
+        "side_effect_primitives_delta": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_side_effect_primitive"
+          }
+        },
+        "unresolved_constructs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_unresolved_construct"
+          }
+        },
+        "unknown_edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_unknown_edge"
+          }
+        },
+        "unknown_edge_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "impacted_test_nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_test_node"
+          }
+        },
+        "caller_contexts": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {},
+                "description": "emits {} when the caller or receiver class is not indexed"
+              },
+              {
+                "$ref": "#/$defs/acct_caller_context"
+              }
+            ]
+          }
+        },
+        "expanded_getattr_reads": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_getattr_read"
+          }
+        },
+        "ast_equal_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "caller_set_closed": {
+          "type": "boolean"
+        },
+        "caller_set_unexplored": {
+          "type": "string"
+        },
+        "callee_set_closed": {
+          "type": "boolean"
+        },
+        "callee_set_unexplored": {
+          "type": "string"
+        },
+        "closure_provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "unexplored_scope": {
+          "type": "string"
+        },
+        "transitive_call_paths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_transitive_path"
+          }
+        },
+        "deleted_callables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_deleted_callable"
+          }
+        },
+        "modified_constants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_modified_constant"
+          }
+        },
+        "callee_edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_callee_edge"
+          }
+        },
+        "callee_unresolved_constructs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_callee_unresolved_construct"
+          }
+        },
+        "modified_class_attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_modified_class_attribute"
+          },
+          "description": "always emitted (may be empty)"
+        },
+        "opaque_caller_guards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_opaque_caller_guard"
+          },
+          "description": "Opaque caller guards, always emitted ([] when none). Required in the current schema."
+        },
+        "modified_module_level": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_module_level_record"
+          },
+          "description": ", always emitted ([] when none). Required in the current schema."
+        }
+      },
+      "description": " EffectAccount.to_dict() with names (side_effect_primitive_delta is emitted as side_effect_primitives_delta). Every record is closed: a new or renamed field fails validation."
+    },
+    "effect_account_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "error",
+        "account_id",
+        "account_sha256",
+        "effect_id",
+        "language",
+        "sidecar",
+        "account",
+        "index_cache_provenance"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "built",
+            "failed",
+            "no-change"
+          ]
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "account_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^acct-[a-f0-9]{20}$"
+            }
+          ]
+        },
+        "account_sha256": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          ],
+          "description": "sha256 of the canonical account JSON (sort_keys, separators (',',':'), ensure_ascii)"
+        },
+        "effect_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "the effect's patch_sha256"
+        },
+        "language": {
+          "const": "python"
+        },
+        "sidecar": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "sha256",
+                "bytes"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          ],
+          "description": "set when the canonical account JSON exceeds 4 MiB; then account is null"
+        },
+        "account": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/effect_account_dict"
+            }
+          ]
+        },
+        "index_cache_provenance": {
+          "$ref": "#/$defs/acct_index_cache_provenance"
+        }
+      },
+      "description": "run artifact effect_account .",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "built"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "error": {
+                "type": "null"
+              },
+              "account_id": {
+                "type": "string"
+              },
+              "account_sha256": {
+                "type": "string"
+              }
+            },
+            "oneOf": [
+              {
+                "properties": {
+                  "account": {
+                    "not": {
+                      "type": "null"
+                    }
+                  },
+                  "sidecar": {
+                    "type": "null"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "account": {
+                    "type": "null"
+                  },
+                  "sidecar": {
+                    "not": {
+                      "type": "null"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "else": {
+            "properties": {
+              "error": {
+                "type": "string",
+                "minLength": 1
+              },
+              "account": {
+                "type": "null"
+              },
+              "sidecar": {
+                "type": "null"
+              },
+              "account_id": {
+                "type": "null"
+              },
+              "account_sha256": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "run_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "thread_id",
+        "checkpoint_id",
+        "base_commit_sha",
+        "base_tree_sha256",
+        "started_at_utc",
+        "loaded_feedback_ids"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "pattern": "^run-[a-f0-9]{12}$"
+        },
+        "thread_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "checkpoint_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "base_commit_sha": {
+          "type": "string",
+          "pattern": "^([a-f0-9]{40}|[a-f0-9]{64})$"
+        },
+        "base_tree_sha256": {
+          "type": "string",
+          "pattern": "^([a-f0-9]{40}|[a-f0-9]{64})$",
+          "description": "key name; the value is the git tree id of the target HEAD (40 hex for SHA-1 repositories, 64 for SHA-256), equal to target.base_tree"
+        },
+        "started_at_utc": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$"
+        },
+        "loaded_feedback_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^fb-[a-f0-9]{20}$"
+          }
+        }
+      },
+      "description": "run identity. Duplicates feedback/graph/target values by design; the validation test checks they agree."
+    },
+    "acct_syntax_node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "node_type",
+        "node_sha256",
+        "start_line",
+        "end_line"
+      ],
+      "properties": {
+        "node_id": {
+          "type": "string"
+        },
+        "node_type": {
+          "type": "string"
+        },
+        "node_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "start_line": {
+          "type": "integer"
+        },
+        "end_line": {
+          "type": "integer"
+        },
+        "conditional": {
+          "type": "boolean",
+          "description": "def sits under a conditional (if/try/...): present on single-def nodes, absent on group nodes"
+        },
+        "qualified_name": {
+          "type": "string"
+        },
+        "enclosing_qualified_name": {
+          "type": "string"
+        },
+        "nested": {
+          "type": "boolean"
+        },
+        "nested_nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_syntax_node"
+          }
+        },
+        "conditional_duplicate": {
+          "type": "boolean"
+        },
+        "conditional_nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_syntax_node"
+          }
+        }
+      },
+      "description": "Single def: node_id,node_type,node_sha256,start_line,end_line,conditional. Nested defs and conditional duplicate defs are GROUP nodes: nested/nested_nodes (+qualified_name, enclosing_qualified_name) or conditional_duplicate/conditional_nodes, each member a node of this same shape. Fields added by later engine versions are optional in older artifacts; see the schema."
+    },
+    "acct_syntax_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "analysis_pass",
+        "resolution",
+        "node_id",
+        "pre",
+        "post"
+      ],
+      "properties": {
+        "analysis_pass": {
+          "type": "string"
+        },
+        "resolution": {
+          "enum": [
+            "resolved",
+            "assumed",
+            "unresolved"
+          ]
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "pre": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/acct_syntax_node"
+            }
+          ]
+        },
+        "post": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/acct_syntax_node"
+            }
+          ]
+        },
+        "nested": {
+          "type": "boolean"
+        },
+        "qualified_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "enclosing_qualified_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "nested_nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_syntax_node"
+          }
+        },
+        "conditional_duplicate": {
+          "type": "boolean"
+        },
+        "conditional_nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_syntax_node"
+          }
+        }
+      },
+      "description": ": tree-sitter cross-tree node identity for a callable (pre/post nodes; null when absent on that side). Optional nested_* / conditional_* fields appear only for nested defs and conditional duplicate defs."
+    },
+    "acct_callable_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "analysis_pass",
+        "resolution",
+        "source_file",
+        "source_line",
+        "node_sha256",
+        "syntax_node_identity"
+      ],
+      "properties": {
+        "analysis_pass": {
+          "type": "string"
+        },
+        "resolution": {
+          "enum": [
+            "resolved",
+            "assumed",
+            "unresolved"
+          ]
+        },
+        "source_file": {
+          "type": "string"
+        },
+        "source_line": {
+          "type": "integer"
+        },
+        "node_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "syntax_node_identity": {
+          "$ref": "#/$defs/acct_syntax_identity"
+        }
+      },
+      "description": "Callable claim provenance: acct_provenance plus the required tree-sitter syntax_node_identity ."
+    },
+    "acct_transitive_path": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "side",
+        "target_qualified_name",
+        "caller_qualified_name",
+        "kind",
+        "path",
+        "path_edges",
+        "provenance"
+      ],
+      "properties": {
+        "side": {
+          "enum": [
+            "pre",
+            "post",
+            "both"
+          ]
+        },
+        "target_qualified_name": {
+          "type": "string"
+        },
+        "caller_qualified_name": {
+          "type": "string"
+        },
+        "kind": {
+          "const": "transitive"
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "path_edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_path_edge"
+          }
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        }
+      }
+    },
+    "acct_deleted_callable": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": ": a callable the change deletes, with the post-tree call sites that still reference it. An empty post_call_sites list does not establish safety (unexplored_scope says why).",
+      "required": [
+        "qualified_name",
+        "module",
+        "file_path",
+        "line_number",
+        "pre_signature",
+        "post_call_sites",
+        "provenance",
+        "node_id",
+        "side",
+        "unexplored_scope"
+      ],
+      "properties": {
+        "qualified_name": {
+          "type": "string"
+        },
+        "module": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer"
+        },
+        "pre_signature": {
+          "type": "string"
+        },
+        "post_call_sites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_call_site"
+          }
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "side": {
+          "const": "pre"
+        },
+        "unexplored_scope": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "acct_constant_reader": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qualified_name",
+        "module",
+        "file_path",
+        "line_number",
+        "kind",
+        "path",
+        "provenance",
+        "node_id",
+        "side"
+      ],
+      "properties": {
+        "qualified_name": {
+          "type": "string"
+        },
+        "module": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "direct",
+            "transitive"
+          ]
+        },
+        "path": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string"
+          }
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "binding_provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "analysis_pass": {
+              "type": "string"
+            },
+            "resolution": {
+              "enum": [
+                "resolved",
+                "assumed",
+                "unresolved"
+              ]
+            },
+            "import_file": {
+              "type": "string"
+            },
+            "import_line": {
+              "type": "integer"
+            },
+            "local_name": {
+              "type": "string"
+            },
+            "target": {
+              "type": "string"
+            },
+            "source_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "description": "Optional provenance for the unique import binding of a constant reader."
+        },
+        "node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "side": {
+          "enum": [
+            "pre",
+            "post"
+          ]
+        }
+      },
+      "description": "A reader of a modified constant. Direct path = [reader, constant]; transitive = caller -> ... -> reader -> constant."
+    },
+    "acct_modified_constant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qualified_name",
+        "module",
+        "file_path",
+        "pre_line_number",
+        "post_line_number",
+        "pre_value_source",
+        "post_value_source",
+        "pre_value_sha256",
+        "post_value_sha256",
+        "pre_value_resolved",
+        "post_value_resolved",
+        "pre_literal_value",
+        "post_literal_value",
+        "readers",
+        "provenance",
+        "node_id",
+        "side",
+        "unexplored_scope"
+      ],
+      "properties": {
+        "qualified_name": {
+          "type": "string"
+        },
+        "module": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "pre_line_number": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "post_line_number": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "pre_value_source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "post_value_source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pre_value_sha256": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          ]
+        },
+        "post_value_sha256": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          ]
+        },
+        "pre_value_resolved": {
+          "type": "boolean"
+        },
+        "post_value_resolved": {
+          "type": "boolean"
+        },
+        "pre_literal_value": {},
+        "post_literal_value": {},
+        "readers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_constant_reader"
+          }
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "pre_alias_target": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "post_alias_target": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "side": {
+          "enum": [
+            "pre",
+            "post",
+            "both"
+          ]
+        },
+        "unexplored_scope": {
+          "type": "string"
+        }
+      },
+      "description": ": a module-level constant whose value changed, its readers and provenance. Side absence is the only reason a side's line/source/hash is null; an annotation-only binding has an empty source + sha256(''), resolved false, literal null.",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "side": {
+                "const": "both"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "pre_line_number": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "pre_value_source": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "pre_value_sha256": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "post_line_number": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "post_value_source": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "post_value_sha256": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "side": {
+                "const": "pre"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "pre_line_number": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "pre_value_source": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "pre_value_sha256": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "post_line_number": {
+                "type": "null"
+              },
+              "post_value_source": {
+                "type": "null"
+              },
+              "post_value_sha256": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "side": {
+                "const": "post"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "post_line_number": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "post_value_source": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "post_value_sha256": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "pre_line_number": {
+                "type": "null"
+              },
+              "pre_value_source": {
+                "type": "null"
+              },
+              "pre_value_sha256": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "pre_value_resolved": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "pre_literal_value": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "post_value_resolved": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "post_literal_value": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "acct_callee_edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caller_qualified_name",
+        "callee_qualified_name",
+        "file_path",
+        "line_number",
+        "kind",
+        "path",
+        "resolution",
+        "provenance",
+        "node_id",
+        "side"
+      ],
+      "properties": {
+        "caller_qualified_name": {
+          "type": "string"
+        },
+        "callee_qualified_name": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "direct",
+            "transitive"
+          ]
+        },
+        "path": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string"
+          }
+        },
+        "resolution": {
+          "enum": [
+            "resolved",
+            "assumed"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "side": {
+          "enum": [
+            "pre",
+            "post"
+          ]
+        }
+      },
+      "description": ": an edge from a modified callable into its callee cone."
+    },
+    "acct_callee_unresolved_construct": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_path",
+        "line_number",
+        "kind",
+        "source",
+        "scope",
+        "caller_qualified_name",
+        "target_qualified_name",
+        "provenance",
+        "side",
+        "raised_exception",
+        "condition_source",
+        "condition_sha256",
+        "node_id",
+        "callee_qualified_name",
+        "resolution",
+        "path"
+      ],
+      "properties": {
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "description": "e.g. dynamic_getattr, unsupported_entry_guard, syntax_parser_disagreement (tree-sitter vs LibCST)"
+        },
+        "source": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "caller_qualified_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "target_qualified_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provenance": {
+          "type": "object",
+          "description": "acct_guard_provenance for unsupported_entry_guard, else acct_provenance; selected by kind below."
+        },
+        "side": {
+          "enum": [
+            "pre",
+            "post"
+          ]
+        },
+        "raised_exception": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "exception a guard raises (module-qualified when resolved), else null"
+        },
+        "condition_source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "source text of the guard condition, else null"
+        },
+        "condition_sha256": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          ],
+          "description": "sha256 of condition_source"
+        },
+        "node_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "syntax node id of the construct "
+        },
+        "record_node_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Optional node id of the modified module-level record represented by this callee-cone blocker."
+        },
+        "callee_qualified_name": {
+          "type": "string"
+        },
+        "resolution": {
+          "const": "unresolved"
+        },
+        "path": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "unsupported_entry_guard"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "condition_source": {
+                "type": "string"
+              },
+              "condition_sha256": {
+                "type": "string"
+              },
+              "provenance": {
+                "$ref": "#/$defs/acct_guard_provenance"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "provenance": {
+                "$ref": "#/$defs/acct_provenance"
+              }
+            }
+          }
+        }
+      ],
+      "description": ": an unresolved construct inside the callee cone of a modified callable. Evidence in unexplored_scope; it does not create a gate obligation."
+    },
+    "acct_effect_flag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "file",
+        "line",
+        "source"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer"
+        },
+        "source": {
+          "type": "string"
+        }
+      },
+      "description": ": an effect observed in a caller/constructor context (e.g. kind 'resource') with its site and source"
+    },
+    "acct_return_shape": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "source",
+        "file_path",
+        "line_number",
+        "resolution",
+        "literal_value",
+        "container_kind",
+        "length",
+        "target_qualified_name",
+        "provenance",
+        "node_id",
+        "side",
+        "unexplored_scope"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "literal",
+            "container",
+            "constructor",
+            "call",
+            "name",
+            "expression",
+            "none"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer"
+        },
+        "resolution": {
+          "enum": [
+            "resolved",
+            "assumed",
+            "unresolved"
+          ]
+        },
+        "literal_value": {},
+        "container_kind": {
+          "enum": [
+            "list",
+            "tuple",
+            "dict",
+            "set",
+            "frozenset",
+            null
+          ]
+        },
+        "length": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "target_qualified_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "side": {
+          "enum": [
+            "pre",
+            "post"
+          ]
+        },
+        "unexplored_scope": {
+          "type": "string"
+        }
+      },
+      "description": ": one statically observed return shape. bare return / fallthrough: kind none, source ''; explicit return None: source 'None'.",
+      "allOf": [
+        {
+          "if": {
+            "not": {
+              "properties": {
+                "kind": {
+                  "const": "literal"
+                },
+                "resolution": {
+                  "const": "resolved"
+                }
+              },
+              "required": [
+                "kind",
+                "resolution"
+              ]
+            }
+          },
+          "then": {
+            "properties": {
+              "literal_value": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "not": {
+              "properties": {
+                "kind": {
+                  "const": "container"
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "container_kind": {
+                "type": "null"
+              },
+              "length": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "container_kind": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "not": {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "constructor",
+                    "call"
+                  ]
+                },
+                "resolution": {
+                  "const": "resolved"
+                }
+              },
+              "required": [
+                "kind",
+                "resolution"
+              ]
+            }
+          },
+          "then": {
+            "properties": {
+              "target_qualified_name": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "resolution": {
+                "const": "resolved"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "unexplored_scope": {
+                "maxLength": 0
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "unexplored_scope": {
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "delta_rel_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbol",
+        "verdict",
+        "reason",
+        "provenance",
+        "witness_inputs",
+        "fragment_notes"
+      ],
+      "description": "delta_rel: non-gating Z3 delta-relational evidence for one modified callable. decide() never reads it; PROVED does not replace the repository test slice. Only COUNTEREXAMPLE also seeds run_differential.",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "minLength": 1,
+          "description": "qualified name of the modified callable"
+        },
+        "verdict": {
+          "enum": [
+            "PROVED",
+            "COUNTEREXAMPLE",
+            "UNMODELED"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 300,
+          "pattern": "^[^\\n\\r]*$",
+          "description": "whitespace-collapsed, <=300 chars"
+        },
+        "provenance": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "analysis",
+                "z3",
+                "function",
+                "pre_sha256",
+                "post_sha256"
+              ],
+              "properties": {
+                "analysis": {
+                  "const": "delta_rel"
+                },
+                "z3": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "z3.get_version_string() of the hard z3 dependency"
+                },
+                "function": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "unqualified function name (symbol is qualified)"
+                },
+                "pre_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "description": "sha256 of the utf-8 source segment of this callable on the base side (whole file text only if it cannot be located)"
+                },
+                "post_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "description": "same, post side"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "analysis"
+              ],
+              "properties": {
+                "analysis": {
+                  "const": "delta_rel"
+                }
+              },
+              "description": "derive-level failure of the delta_rel generator (exception before the check ran); verdict is then UNMODELED"
+            }
+          ]
+        },
+        "witness_inputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "param -> value_repr (JSON-safe whatever the model's integers)"
+          }
+        },
+        "fragment_notes": {
+          "type": "string",
+          "pattern": "^[^\\n\\r]*$",
+          "description": "one line: what the grammar covers / why UNMODELED"
+        },
+        "proof_tier": {
+          "enum": [
+            "unconditional",
+            "conditional",
+            "none"
+          ],
+          "description": ": unconditional = numeric-fragment Z3 proof over the whole annotated domain, no unverified premise about other code; conditional = UF mode, valid only under `assumptions`, must never be admitted alone; none = COUNTEREXAMPLE/UNMODELED (nothing proved). PROVED <=> unconditional|conditional. Non-gating: decide() never reads it. Optional until every emitter pass carries it , then required."
+        },
+        "assumptions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^\\n\\r]*$"
+          },
+          "description": ": premises a PROVED stands on, in emitter order (UF: the callee premise first). conditional: at least one; none: empty; unconditional: empty unless declared deltas are taken as given. Present only with proof_tier."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "verdict": {
+                "const": "COUNTEREXAMPLE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "witness_inputs": {
+                "minItems": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "witness_inputs": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "verdict": {
+                "enum": [
+                  "PROVED",
+                  "COUNTEREXAMPLE"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "provenance": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "analysis",
+                  "z3",
+                  "function",
+                  "pre_sha256",
+                  "post_sha256"
+                ],
+                "properties": {
+                  "analysis": {
+                    "const": "delta_rel"
+                  },
+                  "z3": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "z3.get_version_string() of the hard z3 dependency"
+                  },
+                  "function": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "unqualified function name (symbol is qualified)"
+                  },
+                  "pre_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$",
+                    "description": "sha256 of the utf-8 source segment of this callable on the base side (whole file text only if it cannot be located)"
+                  },
+                  "post_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$",
+                    "description": "same, post side"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "verdict": {
+                "const": "PROVED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "proof_tier": {
+                "enum": [
+                  "unconditional",
+                  "conditional"
+                ]
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "proof_tier": {
+                "const": "none"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "proof_tier"
+            ],
+            "properties": {
+              "proof_tier": {
+                "const": "conditional"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "assumptions"
+            ],
+            "properties": {
+              "assumptions": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "proof_tier"
+            ],
+            "properties": {
+              "proof_tier": {
+                "const": "none"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "assumptions": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ],
+      "dependentRequired": {
+        "assumptions": [
+          "proof_tier"
+        ]
+      }
+    },
+    "acct_value_site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file",
+        "line",
+        "expression",
+        "producer"
+      ],
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer"
+        },
+        "expression": {
+          "type": "string"
+        },
+        "producer": {
+          "enum": [
+            "copy_return",
+            "constructor_call"
+          ]
+        },
+        "definition_site": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "file",
+            "line"
+          ],
+          "properties": {
+            "file": {
+              "type": "string"
+            },
+            "line": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "description": "_method_parameter_value_sites: the call-site expression whose class was resolved, and how"
+    },
+    "acct_class_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qualname",
+        "basis",
+        "constructible",
+        "ctor_site"
+      ],
+      "properties": {
+        "qualname": {
+          "type": "string"
+        },
+        "basis": {
+          "enum": [
+            "annotation",
+            "isinstance",
+            "call_site_value",
+            "name"
+          ]
+        },
+        "constructible": {
+          "type": "boolean"
+        },
+        "ctor_site": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/acct_ctor_site"
+            }
+          ]
+        },
+        "value_site": {
+          "$ref": "#/$defs/acct_value_site"
+        }
+      },
+      "description": "_caller_parameter_facts class candidate; value_site only when basis came from a call-site value"
+    },
+    "acct_class_attr_reader": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qualified_name",
+        "module",
+        "file_path",
+        "line_number",
+        "kind",
+        "path",
+        "receiver_class_qualname",
+        "provenance",
+        "node_id",
+        "side"
+      ],
+      "properties": {
+        "qualified_name": {
+          "type": "string"
+        },
+        "module": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "direct",
+            "transitive"
+          ]
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "receiver_class_qualname": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "runtime class whose MRO resolves self/cls/super().ATTR to the changed attribute; null for explicit Class.ATTR reads"
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "side": {
+          "enum": [
+            "pre",
+            "post",
+            "both"
+          ]
+        }
+      },
+      "description": "class-attribute reader (same shape as constant readers plus receiver_class_qualname); path runs reader -> ... -> Class.ATTR"
+    },
+    "acct_modified_class_attribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qualified_name",
+        "class_qualified_name",
+        "name",
+        "module",
+        "file_path",
+        "pre_line_number",
+        "post_line_number",
+        "pre_value_source",
+        "post_value_source",
+        "pre_value_sha256",
+        "post_value_sha256",
+        "pre_value_resolved",
+        "post_value_resolved",
+        "pre_literal_value",
+        "post_literal_value",
+        "readers",
+        "provenance",
+        "node_id",
+        "side",
+        "unexplored_scope"
+      ],
+      "properties": {
+        "qualified_name": {
+          "type": "string"
+        },
+        "class_qualified_name": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "module": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "pre_line_number": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "post_line_number": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "pre_value_source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "post_value_source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pre_value_sha256": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          ],
+          "description": "sha256(pre_value_source); null when the pre side is absent"
+        },
+        "post_value_sha256": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          ]
+        },
+        "pre_value_resolved": {
+          "type": "boolean"
+        },
+        "post_value_resolved": {
+          "type": "boolean"
+        },
+        "pre_literal_value": {
+          "description": "JSON literal value when resolved, else null"
+        },
+        "post_literal_value": {},
+        "readers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acct_class_attr_reader"
+          }
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "side": {
+          "enum": [
+            "pre",
+            "post",
+            "both"
+          ]
+        },
+        "unexplored_scope": {
+          "type": "string"
+        }
+      },
+      "description": "changed class-attribute binding (separate from module-level modified_constants)"
+    },
+    "acct_guard_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "analysis_pass",
+        "resolution",
+        "source_file",
+        "source_line",
+        "node_sha256",
+        "assumptions"
+      ],
+      "properties": {
+        "analysis_pass": {
+          "type": "string"
+        },
+        "resolution": {
+          "enum": [
+            "resolved",
+            "assumed",
+            "unresolved"
+          ]
+        },
+        "source_file": {
+          "type": "string"
+        },
+        "source_line": {
+          "type": "integer"
+        },
+        "node_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "assumptions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "environment assumptions the claim depends on, sorted and unique, e.g. 'assumes target python 3.14' when a builtin alias was selected by a sys.version_info branch; [] when none "
+        }
+      },
+      "description": "Entry-guard claim provenance: acct_provenance plus the required assumptions list ."
+    },
+    "timings_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phases",
+        "total_seconds"
+      ],
+      "properties": {
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "seconds"
+            ],
+            "properties": {
+              "name": {
+                "enum": [
+                  "stage_and_worker",
+                  "account",
+                  "derive_other",
+                  "differential",
+                  "declare",
+                  "gate",
+                  "resume"
+                ]
+              },
+              "seconds": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "total_seconds": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "description": "Wall-clock seconds per pipeline phase . Informational only: never read by decide(); OPTIONAL top-level key (artifacts without it stay valid)."
+    },
+    "acct_index_cache_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cache_hit_count",
+        "uncached_count"
+      ],
+      "properties": {
+        "cache_hit_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "uncached_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "description": "Per-build indexed-file totals of effect index cache. Python side: EffectAccount.index_cache_stats, a separate attribute excluded from EffectAccount.to_dict(); the CLI writes it here as the artifact key effect_account.index_cache_provenance. Lives on the report wrapper, OUTSIDE the account dict, so account_id and account_sha256 do not change between cold and warm runs. REQUIRED on every report; {0,0} when no indexing ran (failed/no-change)."
+    },
+    "acct_opaque_caller_guard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caller_qualified_name",
+        "callsite_coverage",
+        "condition_sha256",
+        "condition_source",
+        "file_path",
+        "kind",
+        "line_number",
+        "node_id",
+        "provenance",
+        "raised_exception",
+        "scope",
+        "side",
+        "source",
+        "target_qualified_name"
+      ],
+      "properties": {
+        "file_path": {
+          "type": "string"
+        },
+        "line_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "kind": {
+          "const": "unsupported_entry_guard"
+        },
+        "source": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "caller_qualified_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_qualified_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_guard_provenance"
+        },
+        "side": {
+          "const": "both",
+          "description": "the guard is unchanged: present on both sides"
+        },
+        "raised_exception": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "exception a guard raises (module-qualified when resolved), else null"
+        },
+        "condition_source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "the guard's condition expression text (same as source)"
+        },
+        "condition_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "sha256 of condition_source (checked by consistency)"
+        },
+        "node_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "syntax node id of the construct "
+        },
+        "callsite_coverage": {
+          "enum": [
+            "both_polarities"
+          ],
+          "description": "every syntactic call site under the guard is checked irrespective of the guard's truth, so the guard does not block"
+        }
+      },
+      "description": ": an UNCHANGED unsupported entry guard dominating an impacted caller's call sites. Recorded, not a blocker: all call sites below it are checked under both polarities. node_id unique and disjoint from unresolved_constructs (consistency)."
+    },
+    "acct_module_level_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_path",
+        "kind",
+        "side",
+        "source",
+        "source_sha256",
+        "source_truncated",
+        "line_number",
+        "node_id",
+        "provenance",
+        "module",
+        "name",
+        "asname",
+        "pair_id"
+      ],
+      "properties": {
+        "file_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "import_added",
+            "import_removed",
+            "statement"
+          ],
+          "description": "closed: a new kind is a schema change"
+        },
+        "side": {
+          "enum": [
+            "pre",
+            "post"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "pattern": "^[^\\n\\r]*$",
+          "maxLength": 4000,
+          "description": "textsafe.clean(original statement text), capped at 4000 chars (newlines escaped: one line)"
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "sha256 of the ORIGINAL, uncleaned, uncapped source"
+        },
+        "source_truncated": {
+          "type": "boolean"
+        },
+        "line_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provenance": {
+          "$ref": "#/$defs/acct_provenance"
+        },
+        "module": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "asname": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pair_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "import_added"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "side": {
+                "const": "post"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "pair_id": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "import_removed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "side": {
+                "const": "pre"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "pair_id": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "statement"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "module": {
+                "type": "null"
+              },
+              "name": {
+                "type": "null"
+              },
+              "asname": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ],
+      "description": ": one AST-different module-level change (one row per imported name; a replaced statement = pre+post rows sharing pair_id). Each post row and each unpaired pre row is linked by exactly one unresolved_constructs[kind=module_level_change].record_node_id (consistency)."
+    }
+  }
+}

@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.hypothesis/
+
+# Local tool state
+
+# local tool state (never part of a change under review)

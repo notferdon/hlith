@@ -1,0 +1,21 @@
+# Review a change in the terminal
+
+Start `hlith ui --repo /path/to/repo` on a usable terminal. Bare `hlith` starts in the current project or offers project selection. `hlith ui --artifact PATH` opens one recorded artifact directly. Use `--strict-domain` for a public API whose callers may provide subclasses; the Claim names the active caller policy.
+
+**The terminal screen is view-only in this distribution: it starts no check, applies nothing, and never writes your repository.** Checks are recorded by `hlith check` in a terminal (for example `hlith check --repo PATH --uncommitted`, or `--commit SHA`, `--branch NAME`, `--patch FILE`); pass `--target-python /path/to/venv/bin/python` there for an external Python environment. `hlith check` runs in the foreground of that terminal; the screen offers no detach or cancel for it.
+
+1. On Home choose **Review change** (or **Other sources**; **History** is always listed). Select uncommitted files, a recent commit, a branch, or a saved patch. Inspect the diff and toggle included files with `space` (`tab` switches between sources and files). `enter` opens the Claim.
+2. Read the Claim: base, scope, caller policy, readiness (`READY`), and the command gate (`COMMAND`). `enter` opens the exact command a check would run (`pgup`/`pgdn` scroll, `c` copies it); `esc` returns to the Claim. The Claim's action then reads **How to run this check**: `enter` shows **NOT AVAILABLE IN HLITH REVIEW** with the cause "starting a check from the terminal screen is not available in Hlith Review; run `hlith check` in a terminal. Nothing was run and your repository was not changed." No launch folder, clone or run is created; `esc` returns home.
+3. Record the check with `hlith check` in a terminal. Its run is listed in History (`h`) with its recorded decision.
+4. Open a run from History (`enter`) to read its Verdict (`LANDED` / `REFUSED · REFUTED` / `REFUSED · UNVERIFIED` / `REFUSED · NOT-DERIVED`) read-only. Navigate obligations (`↑↓`), open details (`enter`), and switch evidence tabs (`w` witness, `p` provenance, `u` unexplored, `d` full diff). Witness-blamed diff lines are highlighted inline; on a refusal `c` copies an agent-ready note. A refutation with a replayable witness can be reproduced standalone with `hlith replay RUN_ID --repo PATH`; to check a revised change, run `hlith check` again.
+5. Applying a change is not offered in this distribution: the screen has no Apply action, and merging stays with you, outside Hlith. See [LIMITATIONS.md](../LIMITATIONS.md#applying-changes).
+6. History (`h`) and `hlith inspect RUN_ID --repo PATH` retain outcomes, engine run IDs, annotations, limits, target-Python qualification, and feedback lineage. Use `hlith doctor --repo PATH` to inspect host readiness. `q` asks before quitting (**Quit** / **Stay**).
+
+## Terminal capabilities, layout & palettes
+
+Press `?` on any screen for the active key reference (two-column framed layout at ≥100 columns, stacked below; on a short terminal surplus key lines fold into one counted line so the safety statement and the frame stay whole). Layout reflows responsively from wide screens (160×44, 120×36, 100×30 contextual inspector) down to compact 80×24 stacked panes and narrow terminals with top/bottom framing hairlines and zero clipping.
+
+Hlith detects terminal color capabilities automatically and never relies on color alone to carry a state (verdict words, `▌` / `›` focus markers, `+`/`-` diff prefixes, and underline on critical failures always accompany color):
+
+- **Default (`stitch`):** Truecolor (`COLORTERM=truecolor|24bit`) -> 256-color (`stitch_256`) -> 16-color (`stitch_16`) -> 8-color (`native`) -> monochrome (`mono`) -> plain (`plain` on non-TTY or `TERM=dumb`). Automatically selects the WCAG AA light variant when `COLORFGBG` reports a light background (`7` or `15`).
+- **Overrides:** `NO_COLOR=1` or `HLITH_UI_MONO=1` forces attribute-only monochrome (zero color SGR); `HLITH_UI_COLOR=0` removes semantic hues; `HLITH_UI_FAINT=0` disables faint on rules; `--plain` prints a single read-only text frame. Set `HLITH_UI_PALETTE` to `stitch`, `stitch-dark`, `stitch-light`, `native` (terminal default background/foreground, zero 38/48), `dark`, `rich`, `dainty`, or `dun`.

@@ -1,0 +1,41 @@
+# Optional standards workflow. It is dispatch-only: a push or pull request starts nothing.
+# GitHub Actions is disabled for this repository; no hosted-CI evidence is claimed. The job runs
+# scripts/local_standards_gate.sh, the same bounded gate a person runs locally: standards checks, the named
+# Review-product tests (retired tests skipped by name, tests/obsolete_census.py) and the kill lines. It is not
+# a whole-suite result. Runner capability is not established: Hlith needs Landlock ABI >= 6 (Linux 6.12+) and
+# unprivileged user namespaces; otherwise the gate exits 4 (BOUNDARY), never a pass.
+# Every `uses:` is pinned to a full commit SHA (scripts/check_standards.py enforces it).
+name: Hlith standards and kill lines
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hlith-standards
+  cancel-in-progress: false
+
+jobs:
+  standards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install uv
+        run: python -m pip install --disable-pip-version-check 'uv==0.9.18'
+      - name: Report runner host
+        run: |
+          uname -r
+          sysctl kernel.apparmor_restrict_unprivileged_userns 2>/dev/null || true
+      - name: Prepare the pinned public requests tree for KL5
+        run: |
+          git clone --quiet --filter=blob:none --no-checkout https://github.com/psf/requests.git "$RUNNER_TEMP/hlith-kl5-requests"
+          git -C "$RUNNER_TEMP/hlith-kl5-requests" checkout --quiet --detach 0e322af87745eff34caffe4df68456ebc20d9068
+      - name: Run the bounded standards gate
+        env:
+          HLITH_KL5_REPO: ${{ runner.temp }}/hlith-kl5-requests
+          HLITH_GATE_OUT: ${{ runner.temp }}/hlith-gate
+        run: scripts/local_standards_gate.sh "$GITHUB_SHA"

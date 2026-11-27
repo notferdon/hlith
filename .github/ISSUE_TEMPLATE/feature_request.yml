@@ -1,0 +1,32 @@
+name: Feature request
+description: Propose a capability or integration that fits the review-only, fail-closed design.
+title: "[feature] "
+labels: []
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What review question or workflow is currently unsupported or unnecessarily difficult?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: What should Hlith do, and what evidence would make the result trustworthy?
+    validations:
+      required: true
+  - type: textarea
+    id: limits
+    attributes:
+      label: Soundness and refusal behavior
+      description: What must remain refused, and what new evidence or certificate would a positive verdict require?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false

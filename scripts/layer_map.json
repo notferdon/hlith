@@ -1,0 +1,497 @@
+{
+  "schema_version": 2,
+  "source": "ARCHITECTURE.md package map and layer ranks; each package owns its own read APIs",
+  "layer_ranks": {
+    "L0": 0,
+    "L1": 1,
+    "L2": 2,
+    "L3": 3,
+    "L4": 4,
+    "L5": 5,
+    "OPERATOR": 6
+  },
+  "sections": {
+    "contract": {
+      "layer": "L0",
+      "package": "hlith.contract",
+      "status": "present",
+      "role": "frozen contract types, Protocols, codec (stdlib only)"
+    },
+    "hostio": {
+      "layer": "L0",
+      "package": "hlith.hostio",
+      "status": "present",
+      "role": "capability-scoped host primitives: git read, snapshots, host state, integrity, confinement"
+    },
+    "agent": {
+      "layer": "L1",
+      "package": "hlith.agent",
+      "status": "present",
+      "role": "confined worker, supervisor, checkpoint, capture, proposers"
+    },
+    "effect": {
+      "layer": "L2",
+      "package": "hlith.effect",
+      "status": "present",
+      "role": "one whole-patch EffectAccount from sealed snapshots"
+    },
+    "obligation": {
+      "layer": "L3",
+      "package": "hlith.obligation",
+      "status": "present",
+      "role": "independent obligation derivation and verification"
+    },
+    "gate": {
+      "layer": "L4",
+      "package": "hlith.gate",
+      "status": "present",
+      "role": "sole writer of the original target; journal; recovery"
+    },
+    "feedback": {
+      "layer": "L5",
+      "package": "hlith.feedback",
+      "status": "present",
+      "role": "immutable FeedbackRecords, add-only FeedbackInput, post-landing probe"
+    },
+    "operator": {
+      "layer": "OPERATOR",
+      "package": "hlith.operator",
+      "status": "present",
+      "role": "operator host: CLI, coordinator, artifacts, presentation"
+    },
+    "operator_views": {
+      "layer": "OPERATOR",
+      "package": "hlith.operator.tui",
+      "status": "present",
+      "role": "native terminal views (read adapters only)"
+    }
+  },
+  "allowed": {
+    "contract": [],
+    "hostio": [
+      "contract"
+    ],
+    "agent": [
+      "contract",
+      "hostio"
+    ],
+    "effect": [
+      "contract",
+      "hostio"
+    ],
+    "obligation": [
+      "contract",
+      "hostio"
+    ],
+    "gate": [
+      "contract",
+      "hostio"
+    ],
+    "feedback": [
+      "contract",
+      "hostio"
+    ],
+    "operator": [
+      "contract",
+      "hostio",
+      "agent",
+      "effect",
+      "obligation",
+      "gate",
+      "feedback",
+      "operator_views"
+    ],
+    "operator_views": [
+      "contract",
+      "operator"
+    ]
+  },
+  "allowed_notes": {
+    "obligation": "Architecture rule: obligation -> contract, hostio and the effect public API hlith.effect.api only",
+    "feedback": "Architecture rule: 'declared lower probe APIs' = hlith.effect.api + hlith.obligation.api (public APIs only); any other feedback -> L1..L4 edge is a violation",
+    "operator_views": "Architecture rule: operator views -> contract + presentation read APIs (hlith.operator.*) + hostio textsafe ONLY (pure text sanitization is the rendering safety function, L0); no other hostio, no engine layers",
+    "operator": "Architecture: operator host -> public APIs of L1-L5, contract, hostio; operator/ includes tui/** (views)"
+  },
+  "rules": {
+    "no_cycles": true,
+    "proposer_unreachable_from": [
+      "L2",
+      "L3",
+      "L4"
+    ],
+    "missing_paths_fail": true,
+    "unmapped_modules_fail": true
+  },
+  "proposer_modules": [
+    "hlith.agent.proposer",
+    "hlith.proposer",
+    "hlith.propose"
+  ],
+  "modules": {
+    "hlith.types": {
+      "section": "contract",
+      "role": "verdict/obligation types; becomes a contract re-export at step M1",
+      "status": "present"
+    },
+    "hlith.events": {
+      "section": "contract",
+      "role": "run events (roots injected, no sandbox import: architecture section 3)",
+      "status": "present"
+    },
+    "hlith.phases": {
+      "section": "hostio",
+      "role": "compatibility alias for hlith.hostio.phases",
+      "status": "present"
+    },
+    "hlith.phase_ledger": {
+      "section": "hostio",
+      "role": "compatibility alias for hlith.hostio.phase_ledger",
+      "status": "present"
+    },
+    "hlith.textsafe": {
+      "section": "hostio",
+      "role": "compatibility alias for hlith.hostio.textsafe",
+      "status": "present"
+    },
+    "hlith.redact": {
+      "section": "hostio",
+      "role": "compatibility alias for hlith.hostio.redact",
+      "status": "present"
+    },
+    "hlith.gitsafe": {
+      "section": "hostio",
+      "role": "hardened git runner: READ side -> hostio.git_read, WRITE side -> gate (split pending)",
+      "status": "present"
+    },
+    "hlith.gitexport": {
+      "section": "hostio",
+      "role": "clean tree export -> hostio",
+      "status": "present"
+    },
+    "hlith._confine": {
+      "section": "hostio",
+      "role": "compatibility shim for hlith.hostio.confine_exec",
+      "status": "present",
+      "shim": {
+        "target": "hlith.hostio.confine_exec",
+        "removal": "after file-launched callers point to hlith/hostio/confine_exec.py"
+      }
+    },
+    "hlith.sandbox": {
+      "section": "hostio",
+      "role": "compatibility shim for hlith.hostio.confinement",
+      "status": "present",
+      "shim": {
+        "target": "hlith.hostio.confinement",
+        "removal": "after every caller imports hlith.hostio.confinement"
+      }
+    },
+    "hlith.hostio.phases": {
+      "section": "hostio",
+      "role": "phase timing",
+      "status": "present"
+    },
+    "hlith.hostio.phase_ledger": {
+      "section": "hostio",
+      "role": "phase ledger",
+      "status": "present"
+    },
+    "hlith.hostio.textsafe": {
+      "section": "hostio",
+      "role": "safe printable text",
+      "status": "present"
+    },
+    "hlith.hostio.redact": {
+      "section": "hostio",
+      "role": "redaction",
+      "status": "present"
+    },
+    "hlith.hostio.confine_exec": {
+      "section": "hostio",
+      "role": "confinement launcher script",
+      "status": "present"
+    },
+    "hlith.hostio.confinement": {
+      "section": "hostio",
+      "role": "confinement profiles and runner",
+      "status": "present"
+    },
+    "hlith.runtime": {
+      "section": "agent",
+      "role": "compatibility re-export of the agent package",
+      "status": "present",
+      "shim": {
+        "target": "hlith.agent.capture",
+        "removal": "after every caller imports hlith.agent.*"
+      }
+    },
+    "hlith.layer1": {
+      "section": "agent",
+      "role": "compatibility re-export of the agent package",
+      "status": "present",
+      "shim": {
+        "target": "hlith.agent.checkpoint",
+        "removal": "after every caller imports hlith.agent.*"
+      }
+    },
+    "hlith.graph_worker": {
+      "section": "agent",
+      "role": "compatibility re-export of the agent package",
+      "status": "present",
+      "shim": {
+        "target": "hlith.agent.graph",
+        "removal": "after every caller imports hlith.agent.*"
+      }
+    },
+    "hlith.proposer": {
+      "section": "agent",
+      "role": "compatibility re-export of the agent package",
+      "status": "present",
+      "shim": {
+        "target": "hlith.agent.proposer",
+        "removal": "after every caller imports hlith.agent.*"
+      }
+    },
+    "hlith.account_once": {
+      "section": "effect",
+      "role": "account memo (retires)",
+      "status": "present",
+      "shim": {
+        "target": "hlith.effect.api.EffectService",
+        "removal": "after the operator section drops its import"
+      }
+    },
+    "hlith.ast_source": {
+      "section": "effect",
+      "role": "compatibility re-export",
+      "status": "present",
+      "shim": {
+        "target": "hlith.effect.source",
+        "removal": "after L3 (delta_rel) imports hlith.effect.source"
+      }
+    },
+    "hlith.derive": {
+      "section": "obligation",
+      "role": "L3 module pending the obligation/ package",
+      "status": "present"
+    },
+    "hlith.differential": {
+      "section": "obligation",
+      "role": "L3 module pending the obligation/ package",
+      "status": "present"
+    },
+    "hlith.z3_binding": {
+      "section": "obligation",
+      "role": "L3 module pending the obligation/ package",
+      "status": "present"
+    },
+    "hlith.drive_inputs": {
+      "section": "obligation",
+      "role": "L3 module pending the obligation/ package",
+      "status": "present"
+    },
+    "hlith.drive_objects": {
+      "section": "obligation",
+      "role": "L3 module pending the obligation/ package",
+      "status": "present"
+    },
+    "hlith.delta_cover": {
+      "section": "obligation",
+      "role": "L3 module pending the obligation/ package",
+      "status": "present"
+    },
+    "hlith.delta_follow": {
+      "section": "obligation",
+      "role": "L3 module pending the obligation/ package",
+      "status": "present"
+    },
+    "hlith.delta_rel": {
+      "section": "obligation",
+      "role": "L3 module pending the obligation/ package",
+      "status": "present"
+    },
+    "hlith.delta_rel_uf": {
+      "section": "obligation",
+      "role": "L3 module pending the obligation/ package",
+      "status": "present"
+    },
+    "hlith.guard_removed": {
+      "section": "obligation",
+      "role": "L3 module pending the obligation/ package",
+      "status": "present"
+    },
+    "hlith.docstring_check": {
+      "section": "obligation",
+      "role": "L3 module pending the obligation/ package",
+      "status": "present"
+    },
+    "hlith.expected_expr": {
+      "section": "obligation",
+      "role": "L3 module pending the obligation/ package",
+      "status": "present"
+    },
+    "hlith.delta_predicate": {
+      "section": "contract",
+      "role": "delta claim predicate grammar, stdlib only, shared by agent capture and the differential",
+      "status": "present"
+    },
+    "hlith.gate": {
+      "section": "gate",
+      "role": "gate module pending the gate/ package",
+      "status": "present"
+    },
+    "hlith.cli": {
+      "section": "operator",
+      "role": "sys.modules alias of the operator module",
+      "status": "present",
+      "shim": {
+        "target": "hlith.operator.cli",
+        "removal": "after every caller imports the target"
+      }
+    },
+    "hlith.check_cmd": {
+      "section": "operator",
+      "role": "sys.modules alias of the operator module",
+      "status": "present",
+      "shim": {
+        "target": "hlith.operator.check",
+        "removal": "after every caller imports the target"
+      }
+    },
+    "hlith.summary": {
+      "section": "operator",
+      "role": "sys.modules alias of the operator module",
+      "status": "present",
+      "shim": {
+        "target": "hlith.operator.presentation",
+        "removal": "after every caller imports the target"
+      }
+    },
+    "hlith.propose": {
+      "section": "operator",
+      "role": "sys.modules alias of the operator module",
+      "status": "present",
+      "shim": {
+        "target": "hlith.operator.intent.propose",
+        "removal": "after every caller imports the target"
+      }
+    },
+    "hlith.delta_review": {
+      "section": "operator",
+      "role": "sys.modules alias of the operator module",
+      "status": "present",
+      "shim": {
+        "target": "hlith.operator.intent.delta_review",
+        "removal": "after every caller imports the target"
+      }
+    },
+    "hlith.tui": {
+      "section": "operator_views",
+      "role": "compatibility entry for the moved TUI (python -m hlith.tui)",
+      "status": "present",
+      "shim": {
+        "target": "hlith.operator.tui",
+        "removal": "after every launcher uses hlith.operator.tui"
+      }
+    },
+    "hlith.tui.__main__": {
+      "section": "operator_views",
+      "role": "compatibility entry for the moved TUI (python -m hlith.tui)",
+      "status": "present",
+      "shim": {
+        "target": "hlith.operator.tui",
+        "removal": "after every launcher uses hlith.operator.tui"
+      }
+    }
+  },
+  "aliases": {
+    "hlith.cli": "hlith.operator.cli",
+    "hlith.check_cmd": "hlith.operator.check",
+    "hlith.summary": "hlith.operator.presentation",
+    "hlith.propose": "hlith.operator.intent.propose",
+    "hlith.delta_review": "hlith.operator.intent.delta_review",
+    "hlith.operator.tui.schema_check": "hlith.operator.schema",
+    "hlith.tui": "hlith.operator.tui",
+    "hlith.tui.__main__": "hlith.operator.tui.__main__",
+    "hlith.phases": "hlith.hostio.phases",
+    "hlith.phase_ledger": "hlith.hostio.phase_ledger",
+    "hlith.textsafe": "hlith.hostio.textsafe",
+    "hlith.redact": "hlith.hostio.redact"
+  },
+  "file_entrypoints": [
+    {
+      "loader": "hlith.differential",
+      "file": "hlith/drive_inputs.py",
+      "how": "spec_from_file_location inside the confined driver"
+    },
+    {
+      "loader": "hlith.differential",
+      "file": "hlith/drive_objects.py",
+      "how": "spec_from_file_location inside the confined driver"
+    },
+    {
+      "loader": "hlith.differential",
+      "file": "hlith/expected_expr.py",
+      "how": "spec_from_file_location"
+    },
+    {
+      "loader": "hlith.differential",
+      "file": "hlith/delta_predicate.py",
+      "how": "spec_from_file_location"
+    },
+    {
+      "loader": "hlith.differential",
+      "file": "hlith/differential.py",
+      "how": "the checker file re-loads itself as _hlith_diff inside confinement"
+    },
+    {
+      "loader": "hlith.differential",
+      "file": "hlith/_confine.py",
+      "how": "launched as the confinement launcher script"
+    },
+    {
+      "loader": "hlith.drive_inputs",
+      "file": "hlith/sandbox.py",
+      "how": "_load_sibling('sandbox')"
+    },
+    {
+      "loader": "hlith.drive_inputs",
+      "file": "hlith/_confine.py",
+      "how": "launched as the confinement launcher script"
+    },
+    {
+      "loader": "hlith.hostio.confinement",
+      "file": "hlith/hostio/confine_exec.py",
+      "how": "launched as the confinement launcher script"
+    },
+    {
+      "loader": "hlith.agent.tools",
+      "file": "hlith/hostio/confine_exec.py",
+      "how": "launched as the confinement launcher script"
+    },
+    {
+      "loader": "hlith.agent.supervisor",
+      "file": "hlith/agent/graph.py",
+      "how": "python -c program: runpy.run_module('hlith.agent.graph') inside confinement"
+    }
+  ],
+  "known_baseline": [],
+  "known_baseline_note": "Zero baseline achieved: L5 feedback probes now consume ann_admits and explored_input_digest through hlith.obligation.api; TUI artifact fact helpers live in hlith.operator.tui.artifact_facts; read-only run history scanning lives in hlith.operator.run_index.",
+  "known_baseline_rationales": {},
+  "allowed_modules": {
+    "obligation": [
+      "hlith.effect.api"
+    ],
+    "feedback": [
+      "hlith.effect.api",
+      "hlith.obligation.api"
+    ],
+    "operator_views": [
+      "hlith.hostio.textsafe",
+      "hlith.textsafe"
+    ]
+  },
+  "aliases_note": "sys.modules aliases (the old module object IS the target): one node; removal step = after every caller imports the target",
+  "known_unresolved_names": [],
+  "known_unresolved_names_note": "The agent fallback entries are resolved. Never add an entry to make a new import pass."
+}
